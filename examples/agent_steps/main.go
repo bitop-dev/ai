@@ -43,26 +43,27 @@ func main() {
 		},
 	})
 
-	resp, err := ai.GenerateText(context.Background(), ai.GenerateTextRequest{
-		BaseRequest: ai.BaseRequest{
-			Model:    openai.Chat(getenv("OPENAI_MODEL", "gpt-4o-mini")),
-			Messages: history,
-			Tools:    []ai.Tool{add},
-			ToolLoop: &ai.ToolLoopOptions{MaxIterations: 5},
-			OnToolProgress: func(e ai.ToolProgressEvent) {
-				b, _ := json.Marshal(e.Data)
-				fmt.Printf("tool-progress %s(%s): %s\n", e.ToolName, e.ToolCallID, string(b))
-			},
-			OnStepFinish: func(e ai.StepFinishEvent) {
-				fmt.Printf("step %d finish=%s usage=%d toolCalls=%d toolResults=%d\n",
-					e.Step.StepNumber,
-					e.Step.FinishReason,
-					e.Step.Usage.TotalTokens,
-					len(e.Step.ToolCalls),
-					len(e.Step.ToolResults),
-				)
-			},
+	agent := ai.Agent{
+		Model:         openai.Chat(getenv("OPENAI_MODEL", "gpt-4o-mini")),
+		Tools:         []ai.Tool{add},
+		MaxIterations: 5,
+		OnToolProgress: func(e ai.ToolProgressEvent) {
+			b, _ := json.Marshal(e.Data)
+			fmt.Printf("tool-progress %s(%s): %s\n", e.ToolName, e.ToolCallID, string(b))
 		},
+		OnStepFinish: func(e ai.StepFinishEvent) {
+			fmt.Printf("step %d finish=%s usage=%d toolCalls=%d toolResults=%d\n",
+				e.Step.StepNumber,
+				e.Step.FinishReason,
+				e.Step.Usage.TotalTokens,
+				len(e.Step.ToolCalls),
+				len(e.Step.ToolResults),
+			)
+		},
+	}
+
+	resp, err := agent.Generate(context.Background(), ai.AgentGenerateRequest{
+		Messages: history,
 	})
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
