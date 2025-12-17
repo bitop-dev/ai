@@ -62,6 +62,10 @@ func fromProviderContentParts(parts []provider.ContentPart) ([]ContentPart, erro
 			out = append(out, TextPart{Text: v.Text})
 		case provider.ToolCallPart:
 			out = append(out, ToolCallPart{ID: v.ID, Name: v.Name, Args: json.RawMessage(v.Args)})
+		case provider.ImagePart:
+			out = append(out, ImagePart{URL: v.URL, MediaType: v.MediaType, Bytes: append([]byte(nil), v.Bytes...), Base64: v.Base64})
+		case provider.AudioPart:
+			out = append(out, AudioPart{Format: v.Format, Bytes: append([]byte(nil), v.Bytes...), Base64: v.Base64})
 		default:
 			return nil, fmt.Errorf("unknown provider content part type %T", p)
 		}

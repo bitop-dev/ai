@@ -7,13 +7,28 @@ import (
 )
 
 type ToolExecutionMeta struct {
-	ToolCallID string
+	ToolName      string
+	ToolCallID    string
+	ToolCallIndex int
+
+	// Report emits a progress event during tool execution (if enabled on the request).
+	Report func(data any)
 }
 
 type ToolSpec[Input any, Output any] struct {
 	Description string
 	InputSchema Schema
 	Execute     func(ctx context.Context, input Input, meta ToolExecutionMeta) (Output, error)
+}
+
+type toolExecutionMetaKey struct{}
+
+func toolExecutionMetaFromContext(ctx context.Context) ToolExecutionMeta {
+	if ctx == nil {
+		return ToolExecutionMeta{}
+	}
+	meta, _ := ctx.Value(toolExecutionMetaKey{}).(ToolExecutionMeta)
+	return meta
 }
 
 // NewTool creates a Tool with typed input/output. The returned Tool.Handler:
@@ -39,7 +54,7 @@ func NewTool[Input any, Output any](name string, spec ToolSpec[Input, Output]) T
 			if err := json.Unmarshal(input, &v); err != nil {
 				return nil, err
 			}
-			return spec.Execute(ctx, v, ToolExecutionMeta{})
+			return spec.Execute(ctx, v, toolExecutionMetaFromContext(ctx))
 		},
 	}
 }
@@ -67,7 +82,7 @@ func NewDynamicTool(name string, spec DynamicToolSpec) Tool {
 			if err := validateJSONAgainstSchema(spec.InputSchema, input); err != nil {
 				return nil, err
 			}
-			return spec.Execute(ctx, input, ToolExecutionMeta{})
+			return spec.Execute(ctx, input, toolExecutionMetaFromContext(ctx))
 		},
 	}
 }

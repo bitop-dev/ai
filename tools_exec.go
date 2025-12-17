@@ -17,7 +17,17 @@ func findTool(tools []Tool, name string) (Tool, bool) {
 	return Tool{}, false
 }
 
+type toolExecOptions struct {
+	toolCallIndexByID func(toolCallID string) int
+	onInputAvailable  func(tool Tool, call provider.ToolCallPart, toolCallIndex int)
+	onProgress        func(event ToolProgressEvent)
+}
+
 func executeToolCallsProvider(ctx context.Context, tools []Tool, calls []provider.ToolCallPart) ([]provider.Message, error) {
+	return executeToolCallsProviderWithOptions(ctx, tools, calls, toolExecOptions{})
+}
+
+func executeToolCallsProviderWithOptions(ctx context.Context, tools []Tool, calls []provider.ToolCallPart, opts toolExecOptions) ([]provider.Message, error) {
 	if len(calls) == 0 {
 		return nil, nil
 	}
@@ -38,13 +48,40 @@ func executeToolCallsProvider(ctx context.Context, tools []Tool, calls []provide
 			return nil, fmt.Errorf("tool %q missing handler", call.Name)
 		}
 
+		toolCallIndex := -1
+		if opts.toolCallIndexByID != nil {
+			toolCallIndex = opts.toolCallIndexByID(call.ID)
+		}
+
 		if len(t.InputSchema.JSON) > 0 {
 			if err := validateJSONAgainstSchema(t.InputSchema, call.Args); err != nil {
 				return nil, &InvalidToolInputError{ToolName: t.Name, ToolCallID: call.ID, Cause: err}
 			}
 		}
 
-		val, err := t.Handler(ctx, call.Args)
+		if opts.onInputAvailable != nil {
+			opts.onInputAvailable(t, call, toolCallIndex)
+		}
+
+		meta := ToolExecutionMeta{
+			ToolName:      t.Name,
+			ToolCallID:    call.ID,
+			ToolCallIndex: toolCallIndex,
+		}
+		if opts.onProgress != nil {
+			meta.Report = func(data any) {
+				opts.onProgress(ToolProgressEvent{
+					ToolName:      t.Name,
+					ToolCallID:    call.ID,
+					ToolCallIndex: toolCallIndex,
+					Data:          data,
+				})
+			}
+		}
+
+		execCtx := context.WithValue(ctx, toolExecutionMetaKey{}, meta)
+
+		val, err := t.Handler(execCtx, call.Args)
 		if err != nil {
 			return nil, &ToolExecutionError{ToolName: t.Name, ToolCallID: call.ID, Cause: err}
 		}

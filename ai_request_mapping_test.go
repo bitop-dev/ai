@@ -14,6 +14,8 @@ func TestToProviderRequestMapping(t *testing.T) {
 	topP := float32(0.9)
 	stop := []string{"a", "b"}
 	metadata := map[string]string{"k": "v"}
+	headers := map[string]string{"X-Test": "1"}
+	maxRetries := 7
 
 	req, err := toProviderRequest(BaseRequest{
 		Model: model,
@@ -34,6 +36,8 @@ func TestToProviderRequestMapping(t *testing.T) {
 		TopP:        &topP,
 		Stop:        stop,
 		Metadata:    metadata,
+		Headers:     headers,
+		MaxRetries:  &maxRetries,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -60,15 +64,25 @@ func TestToProviderRequestMapping(t *testing.T) {
 	if req.Metadata["k"] != "v" {
 		t.Fatalf("Metadata mismatch: %#v", req.Metadata)
 	}
+	if req.Headers["X-Test"] != "1" {
+		t.Fatalf("Headers mismatch: %#v", req.Headers)
+	}
+	if req.MaxRetries == nil || *req.MaxRetries != maxRetries {
+		t.Fatalf("MaxRetries mismatch")
+	}
 
 	// Ensure clone semantics.
 	stop[0] = "changed"
 	metadata["k"] = "changed"
+	headers["X-Test"] = "changed"
 	if req.Stop[0] != "a" {
 		t.Fatalf("Stop slice was not copied")
 	}
 	if req.Metadata["k"] != "v" {
 		t.Fatalf("Metadata map was not copied")
+	}
+	if req.Headers["X-Test"] != "1" {
+		t.Fatalf("Headers map was not copied")
 	}
 
 	if len(req.Messages) != 3 {

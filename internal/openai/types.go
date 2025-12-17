@@ -22,11 +22,26 @@ type streamOptions struct {
 }
 
 type chatMessage struct {
-	Role       string     `json:"role"`
-	Content    *string    `json:"content,omitempty"`
-	Name       string     `json:"name,omitempty"`
-	ToolCalls  []toolCall `json:"tool_calls,omitempty"`
-	ToolCallID string     `json:"tool_call_id,omitempty"`
+	Role       string          `json:"role"`
+	Content    json.RawMessage `json:"content,omitempty"`
+	Name       string          `json:"name,omitempty"`
+	ToolCalls  []toolCall      `json:"tool_calls,omitempty"`
+	ToolCallID string          `json:"tool_call_id,omitempty"`
+}
+
+type chatContentPart struct {
+	Type string `json:"type"`
+
+	Text string `json:"text,omitempty"`
+
+	ImageURL *struct {
+		URL string `json:"url"`
+	} `json:"image_url,omitempty"`
+
+	InputAudio *struct {
+		Data   string `json:"data"`
+		Format string `json:"format,omitempty"`
+	} `json:"input_audio,omitempty"`
 }
 
 type tool struct {

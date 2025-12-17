@@ -3,6 +3,7 @@ package openai
 import (
 	"bytes"
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -46,9 +47,17 @@ func (p *Provider) Generate(ctx context.Context, req provider.Request) (provider
 	for k, v := range cfg.Headers {
 		h.Set(k, v)
 	}
+	for k, v := range req.Headers {
+		h.Set(k, v)
+	}
+
+	maxRetries := cfg.MaxRetries
+	if req.MaxRetries != nil && *req.MaxRetries >= 0 {
+		maxRetries = *req.MaxRetries
+	}
 
 	resp, err := httpx.DoJSON(ctx, cfg.HTTPClient, http.MethodPost, u, body, h, httpx.RetryPolicy{
-		MaxRetries: cfg.MaxRetries,
+		MaxRetries: maxRetries,
 		MinBackoff: cfg.MinBackoff,
 		MaxBackoff: cfg.MaxBackoff,
 	})
@@ -130,9 +139,17 @@ func (p *Provider) Stream(ctx context.Context, req provider.Request) (provider.S
 	for k, v := range cfg.Headers {
 		h.Set(k, v)
 	}
+	for k, v := range req.Headers {
+		h.Set(k, v)
+	}
+
+	maxRetries := cfg.MaxRetries
+	if req.MaxRetries != nil && *req.MaxRetries >= 0 {
+		maxRetries = *req.MaxRetries
+	}
 
 	httpResp, err := httpx.DoJSON(ctx, cfg.HTTPClient, http.MethodPost, u, body, h, httpx.RetryPolicy{
-		MaxRetries: cfg.MaxRetries,
+		MaxRetries: maxRetries,
 		MinBackoff: cfg.MinBackoff,
 		MaxBackoff: cfg.MaxBackoff,
 	})
@@ -238,20 +255,18 @@ func toChatMessage(m provider.Message) (chatMessage, error) {
 	if role == "" {
 		return chatMessage{}, fmt.Errorf("message role is required")
 	}
-	content, toolCalls, err := splitContentParts(m.Content)
+	contentRaw, hasContent, toolCalls, err := splitContentParts(m.Content)
 	if err != nil {
 		return chatMessage{}, err
 	}
 
-	var contentPtr *string
-	if content != "" || len(toolCalls) == 0 {
-		contentPtr = &content
-	}
-
 	cm := chatMessage{
 		Role:      role,
-		Content:   contentPtr,
+		Content:   contentRaw,
 		ToolCalls: toolCalls,
+	}
+	if !hasContent && len(toolCalls) > 0 {
+		cm.Content = nil
 	}
 
 	if m.Role == provider.RoleTool {
@@ -269,14 +284,17 @@ func toChatMessage(m provider.Message) (chatMessage, error) {
 	return cm, nil
 }
 
-func splitContentParts(parts []provider.ContentPart) (string, []toolCall, error) {
-	var b strings.Builder
+func splitContentParts(parts []provider.ContentPart) (json.RawMessage, bool, []toolCall, error) {
 	var toolCalls []toolCall
+	var contentParts []chatContentPart
+	var hasMultimodal bool
+	var hasContent bool
 
 	for _, p := range parts {
 		switch v := p.(type) {
 		case provider.TextPart:
-			b.WriteString(v.Text)
+			hasContent = true
+			contentParts = append(contentParts, chatContentPart{Type: "text", Text: v.Text})
 		case provider.ToolCallPart:
 			toolCalls = append(toolCalls, toolCall{
 				ID:   v.ID,
@@ -286,11 +304,77 @@ func splitContentParts(parts []provider.ContentPart) (string, []toolCall, error)
 					Arguments: string(v.Args),
 				},
 			})
+		case provider.ImagePart:
+			hasContent = true
+			hasMultimodal = true
+			url, err := imagePartToURL(v)
+			if err != nil {
+				return nil, false, nil, err
+			}
+			contentParts = append(contentParts, chatContentPart{
+				Type: "image_url",
+				ImageURL: &struct {
+					URL string `json:"url"`
+				}{URL: url},
+			})
+		case provider.AudioPart:
+			return nil, false, nil, fmt.Errorf("openai chat completions does not support audio content parts; use Transcribe/GenerateSpeech instead")
 		default:
-			return "", nil, fmt.Errorf("unsupported content part %T", p)
+			return nil, false, nil, fmt.Errorf("unsupported content part %T", p)
 		}
 	}
-	return b.String(), toolCalls, nil
+
+	// If there is no content at all, return empty.
+	if !hasContent {
+		return nil, false, toolCalls, nil
+	}
+
+	// If it's purely a single text part, keep legacy string encoding.
+	if !hasMultimodal && len(contentParts) == 1 && contentParts[0].Type == "text" {
+		b, _ := json.Marshal(contentParts[0].Text)
+		return b, true, toolCalls, nil
+	}
+
+	b, err := json.Marshal(contentParts)
+	if err != nil {
+		return nil, false, nil, err
+	}
+	return b, true, toolCalls, nil
+}
+
+func imagePartToURL(p provider.ImagePart) (string, error) {
+	if p.URL != "" {
+		return p.URL, nil
+	}
+	mt := p.MediaType
+	if mt == "" {
+		mt = "image/png"
+	}
+	var b64 string
+	switch {
+	case p.Base64 != "":
+		b64 = p.Base64
+	case len(p.Bytes) > 0:
+		b64 = base64.StdEncoding.EncodeToString(p.Bytes)
+	default:
+		return "", fmt.Errorf("image part missing URL/Bytes/Base64")
+	}
+	return fmt.Sprintf("data:%s;base64,%s", mt, b64), nil
+}
+
+func audioPartToInput(p provider.AudioPart) (data string, format string, err error) {
+	format = p.Format
+	if format == "" {
+		format = "wav"
+	}
+	switch {
+	case p.Base64 != "":
+		return p.Base64, format, nil
+	case len(p.Bytes) > 0:
+		return base64.StdEncoding.EncodeToString(p.Bytes), format, nil
+	default:
+		return "", "", fmt.Errorf("audio part missing Bytes/Base64")
+	}
 }
 
 func fromChatMessage(m chatMessage) (provider.Message, error) {
@@ -299,8 +383,34 @@ func fromChatMessage(m chatMessage) (provider.Message, error) {
 		return provider.Message{}, fmt.Errorf("missing role")
 	}
 	var parts []provider.ContentPart
-	if m.Content != nil && *m.Content != "" {
-		parts = append(parts, provider.TextPart{Text: *m.Content})
+	if len(m.Content) > 0 {
+		// content can be a string or an array of parts
+		var s string
+		if err := json.Unmarshal(m.Content, &s); err == nil {
+			if s != "" {
+				parts = append(parts, provider.TextPart{Text: s})
+			}
+		} else {
+			var cps []chatContentPart
+			if err := json.Unmarshal(m.Content, &cps); err == nil {
+				for _, cp := range cps {
+					switch cp.Type {
+					case "text":
+						if cp.Text != "" {
+							parts = append(parts, provider.TextPart{Text: cp.Text})
+						}
+					case "image_url":
+						if cp.ImageURL != nil && cp.ImageURL.URL != "" {
+							parts = append(parts, provider.ImagePart{URL: cp.ImageURL.URL})
+						}
+					case "input_audio":
+						if cp.InputAudio != nil && cp.InputAudio.Data != "" {
+							parts = append(parts, provider.AudioPart{Base64: cp.InputAudio.Data, Format: cp.InputAudio.Format})
+						}
+					}
+				}
+			}
+		}
 	}
 	for _, tc := range m.ToolCalls {
 		if tc.Function.Name == "" {

@@ -3,6 +3,7 @@ package ai
 import (
 	"context"
 	"fmt"
+	"time"
 
 	internalAudio "github.com/bitop-dev/ai/internal/audio"
 	"github.com/bitop-dev/ai/internal/provider"
@@ -40,6 +41,7 @@ type TranscribeRequest struct {
 
 	Headers    map[string]string
 	MaxRetries *int
+	Timeout    time.Duration
 
 	ProviderOptions map[string]any
 }
@@ -68,6 +70,9 @@ func IsNoTranscriptGenerated(err error) bool {
 }
 
 func Transcribe(ctx context.Context, req TranscribeRequest) (*Transcript, error) {
+	ctx, cancel := applyTimeout(ctx, req.Timeout)
+	defer cancel()
+
 	p, err := providerForModel(req.Model)
 	if err != nil {
 		return nil, err
@@ -150,6 +155,7 @@ type GenerateSpeechRequest struct {
 
 	Headers    map[string]string
 	MaxRetries *int
+	Timeout    time.Duration
 
 	ProviderOptions map[string]any
 }
@@ -178,6 +184,9 @@ func IsNoSpeechGenerated(err error) bool {
 }
 
 func GenerateSpeech(ctx context.Context, req GenerateSpeechRequest) (*SpeechAudio, error) {
+	ctx, cancel := applyTimeout(ctx, req.Timeout)
+	defer cancel()
+
 	if req.Text == "" {
 		return nil, fmt.Errorf("text is required")
 	}

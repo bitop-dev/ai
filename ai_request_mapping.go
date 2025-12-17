@@ -34,6 +34,8 @@ func toProviderRequest(req BaseRequest) (provider.Request, error) {
 		Model:        req.Model.Name(),
 		Messages:     msgs,
 		Tools:        tools,
+		Headers:      cloneStringMap(req.Headers),
+		MaxRetries:   req.MaxRetries,
 		ProviderData: providerData,
 		MaxTokens:    req.MaxTokens,
 		Temperature:  req.Temperature,
@@ -132,9 +134,9 @@ func toProviderContentParts(parts []ContentPart) ([]provider.ContentPart, error)
 		case ToolCallPart:
 			out = append(out, provider.ToolCallPart{ID: v.ID, Name: v.Name, Args: v.Args})
 		case ImagePart:
-			return nil, fmt.Errorf("image content parts not supported in v0 request mapping")
+			out = append(out, provider.ImagePart{URL: v.URL, MediaType: v.MediaType, Bytes: append([]byte(nil), v.Bytes...), Base64: v.Base64})
 		case AudioPart:
-			return nil, fmt.Errorf("audio content parts not supported in v0 request mapping")
+			out = append(out, provider.AudioPart{Format: v.Format, Bytes: append([]byte(nil), v.Bytes...), Base64: v.Base64})
 		default:
 			return nil, fmt.Errorf("unknown content part type %T", p)
 		}

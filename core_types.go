@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"time"
 )
 
 type ModelRef interface {
@@ -18,6 +19,22 @@ type BaseRequest struct {
 	Messages []Message
 	Tools    []Tool
 	ToolLoop *ToolLoopOptions
+
+	Headers    map[string]string
+	MaxRetries *int
+	Timeout    time.Duration
+
+	// OnToolProgress is called when a tool reports progress during execution.
+	// Tools created via NewTool/NewDynamicTool can report progress via ToolExecutionMeta.Report.
+	OnToolProgress func(event ToolProgressEvent)
+
+	// OnStepFinish is called when a model generation step is complete (including
+	// any tool calls and tool results produced by that step).
+	OnStepFinish func(event StepFinishEvent)
+
+	// PrepareStep is called before each model generation step in a multi-step tool loop.
+	// It can override the messages and active tools for that step.
+	PrepareStep func(event PrepareStepEvent) (PrepareStepResult, error)
 
 	MaxTokens   *int
 	Temperature *float32
@@ -37,6 +54,9 @@ type GenerateTextResponse struct {
 	Message      Message
 	Usage        Usage
 	FinishReason FinishReason
+
+	Steps    []Step
+	Response Response
 }
 
 type StreamTextRequest = GenerateTextRequest
@@ -47,6 +67,8 @@ type TextStream struct {
 	message func() *Message
 	usage   func() Usage
 	finish  func() FinishReason
+	steps   func() []Step
+	resp    func() Response
 	err     func() error
 	close   func() error
 }
@@ -86,6 +108,20 @@ func (s *TextStream) FinishReason() FinishReason {
 	return s.finish()
 }
 
+func (s *TextStream) Steps() []Step {
+	if s == nil || s.steps == nil {
+		return nil
+	}
+	return s.steps()
+}
+
+func (s *TextStream) Response() Response {
+	if s == nil || s.resp == nil {
+		return Response{}
+	}
+	return s.resp()
+}
+
 func (s *TextStream) Err() error {
 	if s == nil || s.err == nil {
 		return nil
@@ -106,6 +142,8 @@ func newTextStream(
 	message func() *Message,
 	usage func() Usage,
 	finish func() FinishReason,
+	steps func() []Step,
+	resp func() Response,
 	err func() error,
 	close func() error,
 ) *TextStream {
@@ -115,6 +153,8 @@ func newTextStream(
 		message: message,
 		usage:   usage,
 		finish:  finish,
+		steps:   steps,
+		resp:    resp,
 		err:     err,
 		close:   close,
 	}
@@ -279,12 +319,119 @@ type Tool struct {
 	Description string
 	InputSchema Schema
 	Handler     ToolHandler
+
+	// Tool input lifecycle hooks (streaming only).
+	// These are called only for StreamText (GenerateText does not stream tool inputs).
+	OnInputStart     func(event ToolInputStartEvent)
+	OnInputDelta     func(event ToolInputDeltaEvent)
+	OnInputAvailable func(event ToolInputAvailableEvent)
 }
 
 type ToolHandler func(ctx context.Context, input json.RawMessage) (any, error)
 
+type ToolInputStartEvent struct {
+	ToolName      string
+	ToolCallID    string
+	ToolCallIndex int
+}
+
+type ToolInputDeltaEvent struct {
+	ToolName      string
+	ToolCallID    string
+	ToolCallIndex int
+
+	InputTextDelta string
+}
+
+type ToolInputAvailableEvent struct {
+	ToolName      string
+	ToolCallID    string
+	ToolCallIndex int
+
+	Input json.RawMessage
+}
+
+type ToolProgressEvent struct {
+	ToolName      string
+	ToolCallID    string
+	ToolCallIndex int
+
+	Data any
+}
+
+type Step struct {
+	StepNumber int
+
+	Text        string
+	Message     Message
+	ToolCalls   []ToolCallPart
+	ToolResults []Message
+
+	FinishReason FinishReason
+	Usage        Usage
+
+	ActiveTools []string
+}
+
+type StepFinishEvent struct {
+	Step Step
+}
+
+type PrepareStepEvent struct {
+	StepNumber int
+	Steps      []Step
+
+	Messages []Message
+}
+
+type PrepareStepResult struct {
+	// Model overrides the model for this step. The provider must match the original request.
+	Model ModelRef
+
+	// Messages overrides the messages used for this step (and becomes the base
+	// for following steps).
+	Messages []Message
+
+	// ActiveTools restricts tools available to the model for this step.
+	// When empty/nil, all tools are active.
+	ActiveTools []string
+}
+
+type StopConditionEvent struct {
+	Steps []Step
+}
+
+type StopCondition func(event StopConditionEvent) bool
+
+func StepCountIs(maxSteps int) StopCondition {
+	return func(event StopConditionEvent) bool {
+		return len(event.Steps) >= maxSteps
+	}
+}
+
+func HasToolCall(toolName string) StopCondition {
+	return func(event StopConditionEvent) bool {
+		for _, s := range event.Steps {
+			for _, tc := range s.ToolCalls {
+				if tc.Name == toolName {
+					return true
+				}
+			}
+		}
+		return false
+	}
+}
+
+type Response struct {
+	Messages []Message
+}
+
 type ToolLoopOptions struct {
 	MaxIterations int
+
+	// StopWhen determines when to stop the internal tool loop. It is only
+	// evaluated when the last step contains tool results.
+	StopWhen StopCondition
 }
 
 type Role string
@@ -320,13 +467,40 @@ type ToolCallPart struct {
 
 func (ToolCallPart) isContentPart() {}
 
-type ImagePart struct{}
+// ImagePart represents a multimodal image input in chat messages.
+// Provide either URL (remote or data URL) or Bytes/Base64.
+type ImagePart struct {
+	URL       string
+	MediaType string
+	Bytes     []byte
+	Base64    string
+}
 
 func (ImagePart) isContentPart() {}
 
-type AudioPart struct{}
+// AudioPart represents a multimodal audio input in chat messages.
+// Provide Bytes/Base64 plus a Format (e.g. "wav" or "mp3") when required.
+type AudioPart struct {
+	Format string
+	Bytes  []byte
+	Base64 string
+}
 
 func (AudioPart) isContentPart() {}
+
+func ImageURL(url string) ImagePart { return ImagePart{URL: url} }
+
+func ImageBytes(mediaType string, b []byte) ImagePart {
+	return ImagePart{MediaType: mediaType, Bytes: b}
+}
+
+func ImageBase64(mediaType string, b64 string) ImagePart {
+	return ImagePart{MediaType: mediaType, Base64: b64}
+}
+
+func AudioBytes(format string, b []byte) AudioPart { return AudioPart{Format: format, Bytes: b} }
+
+func AudioBase64(format string, b64 string) AudioPart { return AudioPart{Format: format, Base64: b64} }
 
 func System(text string) Message {
 	return Message{Role: RoleSystem, Content: []ContentPart{TextPart{Text: text}}}

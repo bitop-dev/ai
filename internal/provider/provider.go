@@ -17,6 +17,9 @@ type Request struct {
 	Messages []Message
 	Tools    []ToolDefinition
 
+	Headers    map[string]string
+	MaxRetries *int
+
 	// ProviderData may carry provider-specific wiring (e.g. a client handle).
 	// Providers must treat unknown types as an error.
 	ProviderData any

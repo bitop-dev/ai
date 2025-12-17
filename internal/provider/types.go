@@ -45,6 +45,27 @@ type ToolCallPart struct {
 
 func (ToolCallPart) isContentPart() {}
 
+// ImagePart represents a multimodal image input in chat messages.
+// URL may be a remote URL or a data URL.
+type ImagePart struct {
+	URL       string
+	MediaType string
+	Bytes     []byte
+	Base64    string
+}
+
+func (ImagePart) isContentPart() {}
+
+// AudioPart represents a multimodal audio input in chat messages.
+// For OpenAI-style inputs, Format is typically "wav" or "mp3".
+type AudioPart struct {
+	Format string
+	Bytes  []byte
+	Base64 string
+}
+
+func (AudioPart) isContentPart() {}
+
 type ToolDefinition struct {
 	Name        string
 	Description string

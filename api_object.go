@@ -11,6 +11,9 @@ import (
 )
 
 func GenerateObject[T any](ctx context.Context, req GenerateObjectRequest[T]) (*GenerateObjectResponse[T], error) {
+	ctx, cancel := applyTimeout(ctx, req.Timeout)
+	defer cancel()
+
 	p, err := providerForModel(req.Model)
 	if err != nil {
 		return nil, err
@@ -52,7 +55,9 @@ func GenerateObject[T any](ctx context.Context, req GenerateObjectRequest[T]) (*
 	}
 
 	exec := func(ctx context.Context, calls []provider.ToolCallPart) ([]provider.Message, error) {
-		return executeToolCallsProvider(ctx, req.Tools, calls)
+		return executeToolCallsProviderWithOptions(ctx, req.Tools, calls, toolExecOptions{
+			onProgress: callReq.OnToolProgress,
+		})
 	}
 
 	out, genErr := internalObject.Generate[T](ctx, p, preq, exec, req.Schema.JSON, internalObject.Options{
@@ -100,6 +105,9 @@ func GenerateObject[T any](ctx context.Context, req GenerateObjectRequest[T]) (*
 }
 
 func StreamObject[T any](ctx context.Context, req StreamObjectRequest[T]) (*ObjectStream[T], error) {
+	ctx, cancel := applyTimeout(ctx, req.Timeout)
+	defer cancel()
+
 	p, err := providerForModel(req.Model)
 	if err != nil {
 		return nil, err
@@ -141,7 +149,9 @@ func StreamObject[T any](ctx context.Context, req StreamObjectRequest[T]) (*Obje
 	}
 
 	exec := func(ctx context.Context, calls []provider.ToolCallPart) ([]provider.Message, error) {
-		return executeToolCallsProvider(ctx, req.Tools, calls)
+		return executeToolCallsProviderWithOptions(ctx, req.Tools, calls, toolExecOptions{
+			onProgress: callReq.OnToolProgress,
+		})
 	}
 
 	impl := internalObject.NewStream[T](ctx, p, preq, exec, req.Schema.JSON, internalObject.Options{

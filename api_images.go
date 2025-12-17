@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"time"
 
 	internalImages "github.com/bitop-dev/ai/internal/images"
 	"github.com/bitop-dev/ai/internal/provider"
@@ -29,6 +30,7 @@ type GenerateImageRequest struct {
 
 	Headers    map[string]string
 	MaxRetries *int
+	Timeout    time.Duration
 
 	ProviderOptions map[string]any
 }
@@ -67,6 +69,9 @@ func IsNoImageGenerated(err error) bool {
 }
 
 func GenerateImage(ctx context.Context, req GenerateImageRequest) (*GenerateImageResponse, error) {
+	ctx, cancel := applyTimeout(ctx, req.Timeout)
+	defer cancel()
+
 	if req.Prompt == "" {
 		return nil, fmt.Errorf("prompt is required")
 	}

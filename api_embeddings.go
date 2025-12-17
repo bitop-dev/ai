@@ -3,6 +3,7 @@ package ai
 import (
 	"context"
 	"fmt"
+	"time"
 
 	internalEmbeddings "github.com/bitop-dev/ai/internal/embeddings"
 	"github.com/bitop-dev/ai/internal/provider"
@@ -16,6 +17,7 @@ type EmbedRequest struct {
 
 	Headers    map[string]string
 	MaxRetries *int
+	Timeout    time.Duration
 
 	ProviderOptions map[string]any
 }
@@ -35,6 +37,7 @@ type EmbedManyRequest struct {
 
 	Headers          map[string]string
 	MaxRetries       *int
+	Timeout          time.Duration
 	MaxParallelCalls int
 
 	ProviderOptions map[string]any
@@ -48,6 +51,9 @@ type EmbedManyResponse struct {
 }
 
 func Embed(ctx context.Context, req EmbedRequest) (*EmbedResponse, error) {
+	ctx, cancel := applyTimeout(ctx, req.Timeout)
+	defer cancel()
+
 	if req.Input == "" {
 		return nil, fmt.Errorf("input is required")
 	}
@@ -57,6 +63,7 @@ func Embed(ctx context.Context, req EmbedRequest) (*EmbedResponse, error) {
 		Metadata:        req.Metadata,
 		Headers:         req.Headers,
 		MaxRetries:      req.MaxRetries,
+		Timeout:         req.Timeout,
 		ProviderOptions: req.ProviderOptions,
 	})
 	if err != nil {
@@ -69,6 +76,9 @@ func Embed(ctx context.Context, req EmbedRequest) (*EmbedResponse, error) {
 }
 
 func EmbedMany(ctx context.Context, req EmbedManyRequest) (*EmbedManyResponse, error) {
+	ctx, cancel := applyTimeout(ctx, req.Timeout)
+	defer cancel()
+
 	p, err := providerForModel(req.Model)
 	if err != nil {
 		return nil, err
