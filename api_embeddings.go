@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	internalEmbeddings "github.com/bitop-dev/ai/internal/embeddings"
 	"github.com/bitop-dev/ai/internal/provider"
 )
 
@@ -95,20 +96,16 @@ func EmbedMany(ctx context.Context, req EmbedManyRequest) (*EmbedManyResponse, e
 	}
 
 	if req.MaxParallelCalls <= 1 || len(req.Input) <= 1 {
-		out, err := ep.Embed(ctx, preq)
+		out, err := internalEmbeddings.EmbedMany(ctx, ep, preq, 1)
 		if err != nil {
 			return nil, mapProviderError(err)
 		}
-		return &EmbedManyResponse{
-			Vectors: out.Vectors,
-			Usage: Usage{
-				PromptTokens:     out.Usage.PromptTokens,
-				CompletionTokens: out.Usage.CompletionTokens,
-				TotalTokens:      out.Usage.TotalTokens,
-			},
-			RawResponse: out.RawResponse,
-		}, nil
+		return &EmbedManyResponse{Vectors: out.Vectors, Usage: Usage{PromptTokens: out.Usage.PromptTokens, CompletionTokens: out.Usage.CompletionTokens, TotalTokens: out.Usage.TotalTokens}, RawResponse: out.RawResponse}, nil
 	}
 
-	return embedManyParallel(ctx, ep, preq, req.MaxParallelCalls)
+	out, err := internalEmbeddings.EmbedMany(ctx, ep, preq, req.MaxParallelCalls)
+	if err != nil {
+		return nil, mapProviderError(err)
+	}
+	return &EmbedManyResponse{Vectors: out.Vectors, Usage: Usage{PromptTokens: out.Usage.PromptTokens, CompletionTokens: out.Usage.CompletionTokens, TotalTokens: out.Usage.TotalTokens}, RawResponse: out.RawResponse}, nil
 }

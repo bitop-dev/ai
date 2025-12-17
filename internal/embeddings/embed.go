@@ -1,4 +1,4 @@
-package ai
+package embeddings
 
 import (
 	"context"
@@ -6,29 +6,32 @@ import (
 	"sync"
 
 	"github.com/bitop-dev/ai/internal/provider"
+	"github.com/bitop-dev/ai/internal/tools"
 )
 
-func embedManyParallel(ctx context.Context, ep provider.EmbeddingProvider, req provider.EmbeddingRequest, maxParallel int) (*EmbedManyResponse, error) {
+func EmbedMany(ctx context.Context, ep provider.EmbeddingProvider, req provider.EmbeddingRequest, maxParallel int) (provider.EmbeddingResponse, error) {
+	if len(req.Inputs) == 0 {
+		return provider.EmbeddingResponse{}, fmt.Errorf("input is required")
+	}
+	if maxParallel <= 1 || len(req.Inputs) <= 1 {
+		return ep.Embed(ctx, req)
+	}
 	if maxParallel < 2 {
 		maxParallel = 2
 	}
-	n := len(req.Inputs)
-	if n == 0 {
-		return nil, fmt.Errorf("input is required")
-	}
-	if maxParallel > n {
-		maxParallel = n
+	if maxParallel > len(req.Inputs) {
+		maxParallel = len(req.Inputs)
 	}
 
 	type batch struct{ start, end int }
-	rawBatches := splitIntoBatches(n, maxParallel)
+	rawBatches := splitIntoBatches(len(req.Inputs), maxParallel)
 	batches := make([]batch, len(rawBatches))
 	for i, b := range rawBatches {
 		batches[i] = batch{start: b.start, end: b.end}
 	}
 
-	outVectors := make([][]float32, n)
-	var aggUsage Usage
+	outVectors := make([][]float32, len(req.Inputs))
+	var aggUsage provider.Usage
 
 	var firstRaw []byte
 	var firstRawOnce sync.Once
@@ -47,10 +50,9 @@ func embedManyParallel(ctx context.Context, ep provider.EmbeddingProvider, req p
 
 			resp, err := ep.Embed(ctx, subReq)
 			if err != nil {
-				errCh <- mapProviderError(err)
+				errCh <- err
 				return
 			}
-
 			if len(resp.Vectors) != len(subReq.Inputs) {
 				errCh <- fmt.Errorf("embedding response count mismatch: got %d want %d", len(resp.Vectors), len(subReq.Inputs))
 				return
@@ -60,16 +62,10 @@ func embedManyParallel(ctx context.Context, ep provider.EmbeddingProvider, req p
 			for i := range resp.Vectors {
 				outVectors[b.start+i] = resp.Vectors[i]
 			}
-			aggUsage = addUsage(aggUsage, Usage{
-				PromptTokens:     resp.Usage.PromptTokens,
-				CompletionTokens: resp.Usage.CompletionTokens,
-				TotalTokens:      resp.Usage.TotalTokens,
-			})
+			aggUsage = tools.AddUsage(aggUsage, resp.Usage)
 			mu.Unlock()
 
-			firstRawOnce.Do(func() {
-				firstRaw = resp.RawResponse
-			})
+			firstRawOnce.Do(func() { firstRaw = resp.RawResponse })
 		}(b)
 	}
 
@@ -78,11 +74,11 @@ func embedManyParallel(ctx context.Context, ep provider.EmbeddingProvider, req p
 
 	for err := range errCh {
 		if err != nil {
-			return nil, err
+			return provider.EmbeddingResponse{}, err
 		}
 	}
 
-	return &EmbedManyResponse{
+	return provider.EmbeddingResponse{
 		Vectors:     outVectors,
 		Usage:       aggUsage,
 		RawResponse: firstRaw,

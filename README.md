@@ -13,3 +13,4 @@ Examples:
 - `go run ./examples/generate_image` (requires `OPENAI_API_KEY`)
 - `go run ./examples/transcribe` (requires `OPENAI_API_KEY` + `AUDIO_PATH`)
 - `go run ./examples/generate_speech` (requires `OPENAI_API_KEY`)
+- `go run ./examples/mcp_tools` (requires `OPENAI_API_KEY` + `MCP_URL`)

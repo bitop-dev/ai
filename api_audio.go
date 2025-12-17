@@ -2,12 +2,9 @@ package ai
 
 import (
 	"context"
-	"encoding/base64"
 	"fmt"
-	"io"
-	"net/http"
-	"time"
 
+	internalAudio "github.com/bitop-dev/ai/internal/audio"
 	"github.com/bitop-dev/ai/internal/provider"
 )
 
@@ -130,48 +127,7 @@ func Transcribe(ctx context.Context, req TranscribeRequest) (*Transcript, error)
 }
 
 func resolveAudio(ctx context.Context, req TranscribeRequest) ([]byte, string, string, error) {
-	if len(req.AudioBytes) > 0 {
-		return req.AudioBytes, defaultString(req.MediaType, "application/octet-stream"), defaultString(req.Filename, "audio"), nil
-	}
-	if req.AudioBase64 != "" {
-		b, err := base64.StdEncoding.DecodeString(req.AudioBase64)
-		if err != nil {
-			return nil, "", "", fmt.Errorf("audioBase64 decode: %w", err)
-		}
-		return b, defaultString(req.MediaType, "application/octet-stream"), defaultString(req.Filename, "audio"), nil
-	}
-	if req.AudioURL != "" {
-		r, err := http.NewRequestWithContext(ctx, http.MethodGet, req.AudioURL, nil)
-		if err != nil {
-			return nil, "", "", err
-		}
-		client := &http.Client{Timeout: 60 * time.Second}
-		resp, err := client.Do(r)
-		if err != nil {
-			return nil, "", "", err
-		}
-		defer resp.Body.Close()
-		if resp.StatusCode < 200 || resp.StatusCode > 299 {
-			return nil, "", "", fmt.Errorf("audioURL http status %d", resp.StatusCode)
-		}
-		b, err := io.ReadAll(resp.Body)
-		if err != nil {
-			return nil, "", "", err
-		}
-		mt := req.MediaType
-		if mt == "" {
-			mt = resp.Header.Get("Content-Type")
-		}
-		return b, defaultString(mt, "application/octet-stream"), defaultString(req.Filename, "audio"), nil
-	}
-	return nil, "", "", fmt.Errorf("audio is required (AudioBytes, AudioBase64, or AudioURL)")
-}
-
-func defaultString(v, fallback string) string {
-	if v != "" {
-		return v
-	}
-	return fallback
+	return internalAudio.ResolveInput(ctx, req.AudioBytes, req.AudioBase64, req.AudioURL, req.MediaType, req.Filename)
 }
 
 type SpeechAudio struct {
