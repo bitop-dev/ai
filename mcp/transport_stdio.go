@@ -220,28 +220,49 @@ func (t *StdioTransport) Call(ctx context.Context, req json.RawMessage) (json.Ra
 		t.mu.Unlock()
 		return nil, err
 	}
-	if parsed.ID == 0 {
+
+	// Notifications (no id) and responses (no method) do not receive responses on stdio.
+	if parsed.ID == nil || parsed.Method == "" {
+		if _, err := t.bw.Write(req); err != nil {
+			t.mu.Unlock()
+			return nil, err
+		}
+		if err := t.bw.WriteByte('\n'); err != nil {
+			t.mu.Unlock()
+			return nil, err
+		}
+		if err := t.bw.Flush(); err != nil {
+			t.mu.Unlock()
+			return nil, err
+		}
+		t.mu.Unlock()
+		return json.RawMessage(`{"jsonrpc":"2.0","id":0,"result":{}}`), nil
+	}
+
+	if *parsed.ID == 0 {
 		t.nextID++
-		parsed.ID = t.nextID
+		id := t.nextID
+		parsed.ID = &id
 		b, _ := json.Marshal(parsed)
 		req = b
 	}
+	id := *parsed.ID
 
 	ch := make(chan rpcResponse, 1)
-	t.pending[parsed.ID] = ch
+	t.pending[id] = ch
 
 	if _, err := t.bw.Write(req); err != nil {
-		delete(t.pending, parsed.ID)
+		delete(t.pending, id)
 		t.mu.Unlock()
 		return nil, err
 	}
 	if err := t.bw.WriteByte('\n'); err != nil {
-		delete(t.pending, parsed.ID)
+		delete(t.pending, id)
 		t.mu.Unlock()
 		return nil, err
 	}
 	if err := t.bw.Flush(); err != nil {
-		delete(t.pending, parsed.ID)
+		delete(t.pending, id)
 		t.mu.Unlock()
 		return nil, err
 	}

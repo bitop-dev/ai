@@ -6,7 +6,7 @@ import "encoding/json"
 
 type rpcRequest struct {
 	JSONRPC string      `json:"jsonrpc"`
-	ID      int64       `json:"id"`
+	ID      *int64      `json:"id,omitempty"`
 	Method  string      `json:"method"`
 	Params  interface{} `json:"params,omitempty"`
 }
@@ -69,6 +69,18 @@ type ResourcesListResult struct {
 	Resources []ResourceInfo `json:"resources"`
 }
 
+type ResourceTemplatesListResult struct {
+	ResourceTemplates []ResourceTemplateInfo `json:"resourceTemplates"`
+}
+
+type ResourceTemplateInfo struct {
+	URITemplate string `json:"uriTemplate"`
+	Name        string `json:"name,omitempty"`
+	Title       string `json:"title,omitempty"`
+	Description string `json:"description,omitempty"`
+	MediaType   string `json:"mimeType,omitempty"`
+}
+
 type ResourceInfo struct {
 	URI         string `json:"uri"`
 	Name        string `json:"name,omitempty"`
@@ -112,6 +124,33 @@ type GetPromptResult struct {
 type PromptMessage struct {
 	Role    string `json:"role"`
 	Content string `json:"content"`
+}
+
+// Initialize / lifecycle.
+
+type ClientInfo struct {
+	Name    string `json:"name"`
+	Title   string `json:"title,omitempty"`
+	Version string `json:"version,omitempty"`
+}
+
+type InitializeRequest struct {
+	ProtocolVersion string         `json:"protocolVersion"`
+	Capabilities    map[string]any `json:"capabilities,omitempty"`
+	ClientInfo      ClientInfo     `json:"clientInfo"`
+}
+
+type ServerInfo struct {
+	Name    string `json:"name"`
+	Title   string `json:"title,omitempty"`
+	Version string `json:"version,omitempty"`
+}
+
+type InitializeResult struct {
+	ProtocolVersion string         `json:"protocolVersion"`
+	Capabilities    map[string]any `json:"capabilities,omitempty"`
+	ServerInfo      ServerInfo     `json:"serverInfo"`
+	Instructions    string         `json:"instructions,omitempty"`
 }
 
 // Elicitation (server -> client request).
