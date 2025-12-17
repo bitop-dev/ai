@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"sort"
 	"sync/atomic"
 
 	"github.com/bitop-dev/ai"
@@ -34,7 +35,35 @@ func (c *Client) Close() error {
 	return c.transport.Close()
 }
 
+// OnElicitationRequest registers a handler for MCP elicitation requests.
+//
+// This is currently only supported for transports that can receive server->client
+// JSON-RPC requests (e.g. stdio). For HTTP-based transports, this returns an error.
+func (c *Client) OnElicitationRequest(handler func(ctx context.Context, req ElicitationRequest) (ElicitationResponse, error)) error {
+	if c == nil || c.transport == nil {
+		return fmt.Errorf("mcp: client is nil")
+	}
+	type elicitationCapable interface {
+		SetElicitationHandler(func(ctx context.Context, req ElicitationRequest) (ElicitationResponse, error))
+	}
+	t, ok := c.transport.(elicitationCapable)
+	if !ok {
+		return fmt.Errorf("mcp: transport does not support elicitation")
+	}
+	t.SetElicitationHandler(handler)
+	return nil
+}
+
 type ToolsOptions struct {
+	// Prefix is prepended to returned tool names. The MCP server tool name is
+	// preserved internally and used when calling tools/call.
+	Prefix string
+
+	// Allowlist/denylist apply to server tool names (before Prefix).
+	// If AllowedTools is non-empty, only those tools are returned.
+	AllowedTools []string
+	DeniedTools  []string
+
 	// Schemas optionally restricts which tools are returned and/or overrides the
 	// server-provided schema for specific tools.
 	//
@@ -66,6 +95,24 @@ func (c *Client) Tools(ctx context.Context, opts *ToolsOptions) ([]ai.Tool, erro
 		}
 	}
 
+	allowed := map[string]bool{}
+	denied := map[string]bool{}
+	if opts != nil && len(opts.AllowedTools) > 0 {
+		for _, n := range opts.AllowedTools {
+			allowed[n] = true
+		}
+	}
+	if opts != nil && len(opts.DeniedTools) > 0 {
+		for _, n := range opts.DeniedTools {
+			denied[n] = true
+		}
+	}
+
+	// If Schemas is used, ensure deterministic ordering.
+	if opts != nil && opts.Schemas != nil {
+		sort.Strings(names)
+	}
+
 	out := make([]ai.Tool, 0, len(names))
 	for _, name := range names {
 		info, ok := byName[name]
@@ -77,6 +124,13 @@ func (c *Client) Tools(ctx context.Context, opts *ToolsOptions) ([]ai.Tool, erro
 			continue
 		}
 
+		if len(allowed) > 0 && !allowed[info.Name] {
+			continue
+		}
+		if denied[info.Name] {
+			continue
+		}
+
 		schema := info.InputSchema
 		if opts != nil && opts.Schemas != nil {
 			if s, ok := opts.Schemas[name]; ok && len(s.JSON) > 0 {
@@ -84,13 +138,17 @@ func (c *Client) Tools(ctx context.Context, opts *ToolsOptions) ([]ai.Tool, erro
 			}
 		}
 
-		toolName := info.Name
+		serverToolName := info.Name
+		publicToolName := serverToolName
+		if opts != nil && opts.Prefix != "" {
+			publicToolName = opts.Prefix + serverToolName
+		}
 		out = append(out, ai.Tool{
-			Name:        info.Name,
+			Name:        publicToolName,
 			Description: info.Description,
 			InputSchema: ai.JSONSchema(schema),
 			Handler: func(ctx context.Context, input json.RawMessage) (any, error) {
-				return c.callTool(ctx, toolName, input)
+				return c.callTool(ctx, serverToolName, input)
 			},
 		})
 	}

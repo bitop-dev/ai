@@ -19,6 +19,8 @@ type StdioTransport struct {
 	Args    []string
 	Env     []string
 
+	elicitationHandler func(ctx context.Context, req ElicitationRequest) (ElicitationResponse, error)
+
 	mu     sync.Mutex
 	cmd    *exec.Cmd
 	stdin  io.WriteCloser
@@ -90,6 +92,21 @@ func (t *StdioTransport) readLoop() {
 			continue
 		}
 
+		// Server can send responses or requests/notifications.
+		var probe struct {
+			Method string          `json:"method"`
+			ID     json.RawMessage `json:"id"`
+		}
+		if err := json.Unmarshal(line, &probe); err != nil {
+			t.failAll(err)
+			return
+		}
+
+		if probe.Method != "" {
+			t.handleServerRequest(line)
+			continue
+		}
+
 		var resp rpcResponse
 		if err := json.Unmarshal(line, &resp); err != nil {
 			t.failAll(err)
@@ -107,6 +124,74 @@ func (t *StdioTransport) readLoop() {
 			close(ch)
 		}
 	}
+}
+
+func (t *StdioTransport) handleServerRequest(line []byte) {
+	var req struct {
+		JSONRPC string          `json:"jsonrpc"`
+		ID      *int64          `json:"id,omitempty"`
+		Method  string          `json:"method"`
+		Params  json.RawMessage `json:"params,omitempty"`
+	}
+	if err := json.Unmarshal(line, &req); err != nil {
+		return
+	}
+
+	// Only elicitation is supported for now.
+	if req.Method != "elicitation/create" {
+		return
+	}
+
+	t.mu.Lock()
+	h := t.elicitationHandler
+	bw := t.bw
+	t.mu.Unlock()
+	if h == nil || bw == nil || req.ID == nil {
+		return
+	}
+
+	var params elicitationCreateParams
+	if err := json.Unmarshal(req.Params, &params); err != nil {
+		_ = t.writeServerResponse(*req.ID, nil, &rpcError{Code: -32602, Message: "invalid params"})
+		return
+	}
+
+	resp, err := h(context.Background(), ElicitationRequest{
+		Message:         params.Message,
+		RequestedSchema: params.RequestedSchema,
+	})
+	if err != nil {
+		_ = t.writeServerResponse(*req.ID, nil, &rpcError{Code: -32000, Message: err.Error()})
+		return
+	}
+
+	_ = t.writeServerResponse(*req.ID, resp, nil)
+}
+
+func (t *StdioTransport) writeServerResponse(id int64, result any, rpcErr *rpcError) error {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	if t.bw == nil {
+		return nil
+	}
+	msg := rpcResponse{JSONRPC: "2.0", ID: id}
+	if rpcErr != nil {
+		msg.Error = rpcErr
+	} else {
+		b, _ := json.Marshal(result)
+		msg.Result = b
+	}
+	b, err := json.Marshal(msg)
+	if err != nil {
+		return err
+	}
+	if _, err := t.bw.Write(b); err != nil {
+		return err
+	}
+	if err := t.bw.WriteByte('\n'); err != nil {
+		return err
+	}
+	return t.bw.Flush()
 }
 
 func (t *StdioTransport) failAll(err error) {
@@ -188,4 +273,10 @@ func (t *StdioTransport) Close() error {
 		close(t.closed)
 	})
 	return nil
+}
+
+func (t *StdioTransport) SetElicitationHandler(h func(ctx context.Context, req ElicitationRequest) (ElicitationResponse, error)) {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+	t.elicitationHandler = h
 }

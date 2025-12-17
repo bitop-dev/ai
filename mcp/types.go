@@ -113,3 +113,28 @@ type PromptMessage struct {
 	Role    string `json:"role"`
 	Content string `json:"content"`
 }
+
+// Elicitation (server -> client request).
+
+type elicitationCreateParams struct {
+	Message         string          `json:"message"`
+	RequestedSchema json.RawMessage `json:"requestedSchema"`
+}
+
+type ElicitationRequest struct {
+	Message         string
+	RequestedSchema json.RawMessage
+}
+
+type ElicitationAction string
+
+const (
+	ElicitationAccept  ElicitationAction = "accept"
+	ElicitationDecline ElicitationAction = "decline"
+	ElicitationCancel  ElicitationAction = "cancel"
+)
+
+type ElicitationResponse struct {
+	Action  ElicitationAction `json:"action"`
+	Content any               `json:"content,omitempty"`
+}
