@@ -2,6 +2,10 @@
 
 Go AI SDK (v0): OpenAI + OpenAI-compatible Chat Completions with a provider-agnostic public API.
 
+Developer docs:
+
+- `docs/README.md`
+
 Examples:
 
 - `go run ./examples/generate_text` (requires `OPENAI_API_KEY`)
@@ -15,6 +19,8 @@ Examples:
 - `go run ./examples/transcribe` (requires `OPENAI_API_KEY` + `AUDIO_PATH`)
 - `go run ./examples/generate_speech` (requires `OPENAI_API_KEY`)
 - `go run ./examples/agent_steps` (requires `OPENAI_API_KEY`)
+- `go run ./examples/agent_loop_controls` (requires `OPENAI_API_KEY`)
+- `go run ./examples/stream_text_tool_hooks` (requires `OPENAI_API_KEY`)
 - `go run ./examples/mcp_tools` (requires `OPENAI_API_KEY` + `MCP_URL`)
 - `go run ./examples/mcp_stream_text` (requires `OPENAI_API_KEY` + `MCP_URL`)
 
