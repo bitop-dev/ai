@@ -1,0 +1,85 @@
+# Plan: Go AI SDK (v0)
+
+## Goals (v0)
+
+- Provider-agnostic public API in `ai`: `GenerateText`, `StreamText`, `GenerateObject[T]`
+- OpenAI Chat Completions + OpenAI-compatible servers (`BaseURL`, `APIPrefix`, `Headers`)
+- Streaming via SSE (`stream=true`), yielding incremental text deltas
+- Tool loop for user tools + internal synthetic tool for `GenerateObject`
+- Strong tests: mapping, SSE decoding, tool loop, retries; env-gated integration tests
+- Leave room for v0.x additions: embeddings, images, audio, and tool-definition helpers (without breaking v0 API)
+
+## Milestones
+
+### M1 — Project skeleton
+
+- Initialize Go module and package layout (`ai`, `openai`, `internal/...`)
+- Define exported core types (`Message`, `ContentPart`, `Tool`, `Schema`, `Usage`, `FinishReason`, `Error`)
+- Define internal provider registry + interfaces (`internal/provider`)
+
+### M2 — OpenAI client + model refs
+
+- Implement `openai.Config`, `openai.Configure`, `openai.NewClient`
+- Implement `openai.Chat(model)` and `client.Chat(model)` (client-bound model refs)
+- Implement request building for `POST /chat/completions` (including tools)
+- Implement HTTP retry policy (timeouts, 408/409/429/5xx; full jitter; `Retry-After`)
+
+### M3 — SSE streaming
+
+- Implement `internal/sse` decoder for `data:` frames and `[DONE]`
+- Implement OpenAI streaming adapter → `ai.TextStream` interface
+- Ensure tool calls during streaming trigger internal loop and continued streaming
+
+### M4 — Tool loop
+
+- Implement tool-call detection, handler execution, and message appending
+- Enforce `ToolLoopOptions.MaxIterations` (default 5, per-request override)
+- Ensure deterministic behavior + fake provider support for unit tests
+
+### M5 — GenerateObject[T]
+
+- Inject synthetic tool `__ai_return_json` when `Schema` provided (collision check)
+- Parse tool-call args as raw JSON, validate (JSON Schema when provided), decode into `T`
+- Implement bounded retry loop based on `Strict` + `MaxRetries` with sanitized errors
+- Fallback behavior for providers without tools (JSON-only prompting)
+
+### M6 — Tests + examples
+
+- Unit tests: mapping, SSE, tool loop, `GenerateObject` retry/validation
+- Env-gated integration tests against OpenAI (GenerateText/StreamText/GenerateObject)
+- Examples: `GenerateText`, `StreamText`, `GenerateObject`
+
+---
+
+## Next milestones (v0.x)
+
+### M7 — Integration + DX polish
+
+- Env-gated integration tests for OpenAI and at least one OpenAI-compatible server
+- Streaming ergonomics: optional `TextStream.Reader()` and/or iterator helpers
+- Provider errors surfaced as `*ai.Error` (status/code/retryable) with helpers working reliably
+- `GenerateObject` polish: merge `Usage` across loop/retries; improve correction prompts
+- Optional: `StreamObject` (v0.1)
+
+### M8 — New endpoints (v0.x)
+
+- Embeddings:
+
+  - `Embed` (single) and `EmbedMany` (batch) helpers
+  - OpenAI `/embeddings` mapping + tests + examples
+
+- Images:
+
+  - `GenerateImage` helper (OpenAI images endpoint)
+  - Response includes URLs and/or base64; tests + example
+
+- Audio:
+
+  - `Transcribe` helper (speech-to-text)
+  - `GenerateSpeech` helper (text-to-speech)
+  - Tests + examples (env-gated)
+
+### M9 — Tool authoring helpers (v0.x)
+
+- `tool(...)` helper for static tools (ergonomic builder around `Tool`)
+- `dynamicTool(...)` helper for runtime-defined schema/tools (provider-agnostic surface)
