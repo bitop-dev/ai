@@ -1,0 +1,184 @@
+# github.com/bitop-dev/ai — LLM Usage Guide
+
+This repository is a Go AI SDK for OpenAI and OpenAI-compatible providers.
+
+## Install
+
+```bash
+go get github.com/bitop-dev/ai
+go get github.com/bitop-dev/ai/openai
+```
+
+## Configure OpenAI
+
+```go
+import "github.com/bitop-dev/ai/openai"
+
+openai.Configure(openai.Config{
+  APIKey:    os.Getenv("OPENAI_API_KEY"),
+  BaseURL:   os.Getenv("OPENAI_BASE_URL"),  // optional
+  APIPrefix: os.Getenv("OPENAI_API_PREFIX"), // optional (e.g. "/v1")
+})
+```
+
+## Generate text
+
+```go
+resp, err := ai.GenerateText(ctx, ai.GenerateTextRequest{
+  BaseRequest: ai.BaseRequest{
+    Model: openai.Chat("gpt-4o-mini"),
+    Messages: []ai.Message{
+      ai.User("Invent a new holiday and describe its traditions."),
+    },
+  },
+})
+fmt.Println(resp.Text)
+```
+
+## Stream text
+
+```go
+stream, err := ai.StreamText(ctx, ai.StreamTextRequest{
+  BaseRequest: ai.BaseRequest{
+    Model: openai.Chat("gpt-4o-mini"),
+    Messages: []ai.Message{ai.User("Write a haiku about Go.")},
+  },
+})
+defer stream.Close()
+for stream.Next() { fmt.Print(stream.Delta()) }
+if err := stream.Err(); err != nil { log.Fatal(err) }
+```
+
+## Tools (tool calling)
+
+```go
+add := ai.NewTool("add", ai.ToolSpec[struct {
+  A int `json:"a"`
+  B int `json:"b"`
+}, map[string]int]{
+  InputSchema: ai.JSONSchema([]byte(`{"type":"object","properties":{"a":{"type":"integer"},"b":{"type":"integer"}},"required":["a","b"],"additionalProperties":false}`)),
+  Execute: func(ctx context.Context, in struct {
+    A int `json:"a"`
+    B int `json:"b"`
+  }, meta ai.ToolExecutionMeta) (map[string]int, error) {
+    return map[string]int{"result": in.A + in.B}, nil
+  },
+})
+
+resp, err := ai.GenerateText(ctx, ai.GenerateTextRequest{
+  BaseRequest: ai.BaseRequest{
+    Model: openai.Chat("gpt-4o-mini"),
+    Messages: []ai.Message{ai.User("Use add to add 1 and 2, then reply with the result.")},
+    Tools: []ai.Tool{add},
+    ToolLoop: &ai.ToolLoopOptions{MaxIterations: 5},
+  },
+})
+```
+
+## Agent wrapper
+
+```go
+agent := ai.Agent{
+  Model: openai.Chat("gpt-4o-mini"),
+  Tools: []ai.Tool{add},
+  MaxIterations: 10,
+}
+resp, err := agent.Generate(ctx, ai.AgentGenerateRequest{Prompt: "Add 40 and 2 using the tool."})
+```
+
+## Structured output (objects)
+
+```go
+type Out struct{ X int `json:"x"` }
+schema := ai.JSONSchema([]byte(`{"type":"object","properties":{"x":{"type":"integer"}},"required":["x"],"additionalProperties":false}`))
+
+resp, err := ai.GenerateObject[Out](ctx, ai.GenerateObjectRequest[Out]{
+  BaseRequest: ai.BaseRequest{
+    Model: openai.Chat("gpt-4o-mini"),
+    Messages: []ai.Message{ai.User("Return {\"x\": 1}.")},
+  },
+  Schema: schema,
+})
+fmt.Println(resp.Object.X)
+```
+
+## Embeddings
+
+```go
+emb, err := ai.Embed(ctx, ai.EmbedRequest{
+  Model: openai.TextEmbedding("text-embedding-3-small"),
+  Input: "sunny day at the beach",
+})
+fmt.Println(len(emb.Vector))
+```
+
+## Images
+
+```go
+img, err := ai.GenerateImage(ctx, ai.GenerateImageRequest{
+  Model:  openai.Image("gpt-image-1"),
+  Prompt: "A pixel-art gopher",
+})
+os.WriteFile("out.png", img.Image.Uint8Array, 0o644)
+```
+
+## Audio
+
+```go
+tr, err := ai.Transcribe(ctx, ai.TranscribeRequest{
+  Model: openai.Transcription("whisper-1"),
+  AudioBytes: audioBytes,
+  Filename: "audio.mp3",
+  MediaType: "audio/mpeg",
+})
+
+tts, err := ai.GenerateSpeech(ctx, ai.GenerateSpeechRequest{
+  Model: openai.Speech("tts-1"),
+  Text: "Hello, world!",
+  Voice: "alloy",
+})
+os.WriteFile("out.mp3", tts.AudioData, 0o644)
+```
+
+## Multimodal images in chat
+
+```go
+msg := ai.Message{
+  Role: ai.RoleUser,
+  Content: []ai.ContentPart{
+    ai.TextPart{Text: "Describe the image."},
+    ai.ImageURL("https://example.com/cat.png"),
+  },
+}
+
+resp, err := ai.GenerateText(ctx, ai.GenerateTextRequest{
+  BaseRequest: ai.BaseRequest{
+    Model: openai.Chat("gpt-4o-mini"),
+    Messages: []ai.Message{msg},
+  },
+})
+```
+
+## MCP (Model Context Protocol)
+
+```go
+client := mcp.NewClient(mcp.HTTPTransport{URL: os.Getenv("MCP_URL")})
+defer client.Close()
+
+tools, err := client.Tools(ctx, mcp.ToolsOptions{Prefix: "mcp_"})
+resp, err := ai.GenerateText(ctx, ai.GenerateTextRequest{
+  BaseRequest: ai.BaseRequest{
+    Model: openai.Chat("gpt-4o-mini"),
+    Messages: []ai.Message{ai.User("Use MCP tools if needed.")},
+    Tools: tools,
+    ToolLoop: &ai.ToolLoopOptions{MaxIterations: 10},
+  },
+})
+```
+
+## Where to go next
+
+- Developer docs index: `docs/README.md`
+- Runnable examples: `examples/`
+- AI-focused repo overview: `AI_HANDOFF.md`
+
