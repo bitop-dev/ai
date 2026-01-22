@@ -93,6 +93,9 @@ result, err := ai.GenerateTextWithTools(ctx, model, ai.ToolLoopOptions{
 })
 ```
 
+For a higher-level agent abstraction with stop conditions and callbacks, see
+`docs/agents.md`.
+
 ## Other modalities
 
 Convenience helpers call the provider interfaces directly:

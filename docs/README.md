@@ -5,6 +5,8 @@ This directory contains package-level docs for the Go AI SDK.
 ## Core packages
 
 - [ai](ai.md): High-level generation APIs, tool loop, structured output, streaming helpers.
+- [agents](agents.md): ToolLoopAgent and stop conditions.
+- [tools](tools.md): Tool definitions, dynamic tools, approvals.
 - [gateway](gateway.md): Vercel AI Gateway provider wrapper.
 - [mcp](mcp.md): Model Context Protocol client and tool bridging.
 - [provider](provider.md): Provider interfaces, shared types, error taxonomy.

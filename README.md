@@ -73,6 +73,8 @@ if err := ai.PipeStream(ctx, w, result.Stream); err != nil {
 
 - `docs/README.md`
 - `docs/ai.md`
+- `docs/agents.md`
+- `docs/tools.md`
 - `docs/gateway.md`
 - `docs/provider.md`
 - `docs/providerutils.md`
@@ -88,6 +90,7 @@ if err := ai.PipeStream(ctx, w, result.Stream); err != nil {
 - `examples/streaming_sse/main.go`
 - `examples/gateway_streaming/main.go`
 - `examples/registry_usage/main.go`
+- `examples/agent_tool_loop/main.go`
 - `examples/tool_calling_auto/main.go`
 - `examples/tool_calling_manual/main.go`
 - `examples/structured_output/main.go`

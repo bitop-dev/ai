@@ -25,7 +25,7 @@ type ToolLoopOptions struct {
 	Approve  providerutils.ToolApprovalFunc
 }
 
-func GenerateTextWithTools(ctx context.Context, model provider.LanguageModelV3, options ToolLoopOptions) (GenerateTextResult, error) {
+func GenerateTextWithTools(ctx context.Context, model provider.LanguageModel, options ToolLoopOptions) (GenerateTextResult, error) {
 	if len(options.Tools) == 0 {
 		return GenerateText(ctx, model, GenerateTextOptions(options.TextOptions))
 	}

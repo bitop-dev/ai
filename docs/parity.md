@@ -10,6 +10,7 @@ API surface; migration guides from the TypeScript SDK are not included.
 | Text generation | Implemented | `GenerateText`, `StreamText` over `LanguageModel`. |
 | Structured output | Implemented | `GenerateObject` + `StreamObject`, parsing on collect. |
 | Tool loop | Implemented | Tool approvals and max-step limit. |
+| Agents | Implemented | `ToolLoopAgent` with stop conditions and callbacks. |
 | Streaming helpers | Implemented | `Stream` iterator and `PipeStream` SSE helper. |
 | Telemetry hooks | Implemented | `Telemetry` interface and no-op default. |
 | Other modalities | Implemented | Embed, image, speech, transcription, rerank wrappers. |
