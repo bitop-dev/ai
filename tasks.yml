@@ -735,7 +735,7 @@ tasks:
       - Tests and docs entry added
 
   - title: "phase-8.md - Implement provider: gladia"
-    completed: false
+    completed: true
     parallel_group: 9
     tags: [phase-8, provider, gladia]
     file: phase-8.md

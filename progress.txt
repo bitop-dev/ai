@@ -62,3 +62,4 @@
 2026-01-22: Added ElevenLabs speech/transcription provider with request mapping, error handling, tests, and documentation, and marked the task complete.
 2026-01-22: Added the Hume speech provider with request mapping, context option support, tests, and documentation, and marked the task complete.
 2026-01-22: Implemented the LMNT speech provider with request mapping, error handling, tests, and documentation, and marked the task complete.
+2026-01-22: Implemented the Gladia transcription provider with upload/polling flow, option mapping, tests, and documentation, and marked the task complete.
