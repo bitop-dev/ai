@@ -143,25 +143,47 @@ type LanguageModelV3Response struct {
 }
 
 // EmbeddingModelV3CallOptions defines provider call options for embedding models.
-type EmbeddingModelV3CallOptions struct{}
+type EmbeddingModelV3CallOptions struct {
+	Values         []string
+	RequestOptions RequestOptions
+}
 
 // EmbeddingModelV3Result captures an embedding model response.
 type EmbeddingModelV3Result struct{}
 
 // ImageModelV3CallOptions defines provider call options for image models.
-type ImageModelV3CallOptions struct{}
+type ImageModelV3CallOptions struct {
+	Prompt         string
+	N              int
+	Size           string
+	AspectRatio    string
+	Seed           int
+	RequestOptions RequestOptions
+}
 
 // ImageModelV3Result captures an image model response.
 type ImageModelV3Result struct{}
 
 // SpeechModelV3CallOptions defines provider call options for speech models.
-type SpeechModelV3CallOptions struct{}
+type SpeechModelV3CallOptions struct {
+	Text           string
+	Voice          string
+	OutputFormat   string
+	Instructions   string
+	Speed          float64
+	Language       string
+	RequestOptions RequestOptions
+}
 
 // SpeechModelV3Result captures a speech model response.
 type SpeechModelV3Result struct{}
 
 // TranscriptionModelV3CallOptions defines provider call options for transcription models.
-type TranscriptionModelV3CallOptions struct{}
+type TranscriptionModelV3CallOptions struct {
+	Audio          []byte
+	MediaType      string
+	RequestOptions RequestOptions
+}
 
 // TranscriptionModelV3Result captures a transcription model response.
 type TranscriptionModelV3Result struct{}

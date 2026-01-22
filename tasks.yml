@@ -312,7 +312,7 @@ tasks:
   # PARALLEL GROUP 7: Phase 6 - providers/openai
   # ===========================================================================
   - title: "phase-6.md - Implement OpenAI provider"
-    completed: false
+    completed: true
     parallel_group: 7
     tags: [phase-6, provider, openai]
     file: phase-6.md
