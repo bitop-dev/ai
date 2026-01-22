@@ -9,8 +9,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/vercel/ai-sdk-go/pkg/provider"
-	"github.com/vercel/ai-sdk-go/pkg/providerutils"
+	"github.com/bitop-dev/ai/pkg/provider"
+	"github.com/bitop-dev/ai/pkg/providerutils"
 )
 
 func TestGoogleGenerateRequest(t *testing.T) {

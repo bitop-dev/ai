@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/vercel/ai-sdk-go/pkg/provider"
+	"github.com/bitop-dev/ai/pkg/provider"
 )
 
 // GatewayErrorType identifies gateway error classifications.

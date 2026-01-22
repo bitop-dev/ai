@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/vercel/ai-sdk-go/pkg/provider"
+	"github.com/bitop-dev/ai/pkg/provider"
 )
 
 func TestPipeStreamWritesSSE(t *testing.T) {

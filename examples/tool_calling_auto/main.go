@@ -5,10 +5,10 @@ import (
 	"log"
 	"time"
 
-	"github.com/vercel/ai-sdk-go/pkg/ai"
-	"github.com/vercel/ai-sdk-go/pkg/provider"
-	"github.com/vercel/ai-sdk-go/pkg/providers/openai"
-	"github.com/vercel/ai-sdk-go/pkg/providerutils"
+	"github.com/bitop-dev/ai/pkg/ai"
+	"github.com/bitop-dev/ai/pkg/provider"
+	"github.com/bitop-dev/ai/pkg/providers/openai"
+	"github.com/bitop-dev/ai/pkg/providerutils"
 )
 
 func main() {

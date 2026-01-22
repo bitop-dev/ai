@@ -3,7 +3,7 @@ package ai
 import (
 	"context"
 
-	"github.com/vercel/ai-sdk-go/pkg/provider"
+	"github.com/bitop-dev/ai/pkg/provider"
 )
 
 func Embed(ctx context.Context, model provider.EmbeddingModelV3, options provider.EmbeddingModelV3CallOptions) (provider.EmbeddingModelV3Result, error) {

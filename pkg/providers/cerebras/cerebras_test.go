@@ -9,7 +9,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/vercel/ai-sdk-go/pkg/provider"
+	"github.com/bitop-dev/ai/pkg/provider"
 )
 
 func TestCreateCerebrasDefaults(t *testing.T) {

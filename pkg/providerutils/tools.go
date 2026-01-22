@@ -7,7 +7,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/vercel/ai-sdk-go/pkg/provider"
+	"github.com/bitop-dev/ai/pkg/provider"
 )
 
 type ToolCall = provider.ToolCall

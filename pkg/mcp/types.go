@@ -1,6 +1,6 @@
 package mcp
 
-import "github.com/vercel/ai-sdk-go/pkg/provider"
+import "github.com/bitop-dev/ai/pkg/provider"
 
 const LatestProtocolVersion = "2025-06-18"
 

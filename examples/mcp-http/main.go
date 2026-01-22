@@ -7,7 +7,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/vercel/ai-sdk-go/pkg/mcp"
+	"github.com/bitop-dev/ai/pkg/mcp"
 )
 
 func main() {

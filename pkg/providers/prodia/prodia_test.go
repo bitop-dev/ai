@@ -12,7 +12,7 @@ import (
 	"net/textproto"
 	"testing"
 
-	"github.com/vercel/ai-sdk-go/pkg/provider"
+	"github.com/bitop-dev/ai/pkg/provider"
 )
 
 func TestCreateProdiaDefaults(t *testing.T) {

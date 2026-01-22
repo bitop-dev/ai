@@ -3,7 +3,7 @@ package providerutils
 import (
 	"context"
 
-	"github.com/vercel/ai-sdk-go/pkg/provider"
+	"github.com/bitop-dev/ai/pkg/provider"
 )
 
 // ValidationResult captures schema validation output.

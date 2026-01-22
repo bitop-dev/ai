@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/vercel/ai-sdk-go/pkg/provider"
-	"github.com/vercel/ai-sdk-go/pkg/providerutils"
+	"github.com/bitop-dev/ai/pkg/provider"
+	"github.com/bitop-dev/ai/pkg/providerutils"
 )
 
 type stubLanguageModel struct {

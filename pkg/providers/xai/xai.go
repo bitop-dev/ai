@@ -5,8 +5,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/vercel/ai-sdk-go/pkg/provider"
-	"github.com/vercel/ai-sdk-go/pkg/providers/openaicompatible"
+	"github.com/bitop-dev/ai/pkg/provider"
+	"github.com/bitop-dev/ai/pkg/providers/openaicompatible"
 )
 
 const DefaultBaseURL = "https://api.x.ai/v1"

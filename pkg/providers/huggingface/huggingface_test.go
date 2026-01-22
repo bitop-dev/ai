@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/vercel/ai-sdk-go/internal/testserver"
-	"github.com/vercel/ai-sdk-go/pkg/provider"
+	"github.com/bitop-dev/ai/internal/testserver"
+	"github.com/bitop-dev/ai/pkg/provider"
 )
 
 func TestCreateHuggingFaceDefaults(t *testing.T) {

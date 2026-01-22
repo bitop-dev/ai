@@ -1,3 +1,3 @@
-module github.com/vercel/ai-sdk-go
+module github.com/bitop-dev/ai
 
 go 1.22

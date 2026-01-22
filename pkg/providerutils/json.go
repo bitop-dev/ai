@@ -8,7 +8,7 @@ import (
 	"io"
 	"strings"
 
-	"github.com/vercel/ai-sdk-go/pkg/provider"
+	"github.com/bitop-dev/ai/pkg/provider"
 )
 
 // JSONParseError reports failures when parsing JSON text.

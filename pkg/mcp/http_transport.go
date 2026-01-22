@@ -12,7 +12,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/vercel/ai-sdk-go/pkg/providerutils"
+	"github.com/bitop-dev/ai/pkg/providerutils"
 )
 
 type HTTPConfig struct {

@@ -3,8 +3,8 @@ package ai
 import (
 	"errors"
 
-	"github.com/vercel/ai-sdk-go/pkg/provider"
-	"github.com/vercel/ai-sdk-go/pkg/registry"
+	"github.com/bitop-dev/ai/pkg/provider"
+	"github.com/bitop-dev/ai/pkg/registry"
 )
 
 // ErrNilRegistry indicates a nil registry was provided.

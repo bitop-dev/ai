@@ -1,6 +1,6 @@
 package gateway
 
-import "github.com/vercel/ai-sdk-go/pkg/provider"
+import "github.com/bitop-dev/ai/pkg/provider"
 
 type GatewayModelID string
 
