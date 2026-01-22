@@ -226,7 +226,7 @@ tasks:
       - Gateway model settings types defined
 
   - title: "phase-4.md - Implement gateway error mapping"
-    completed: false
+    completed: true
     parallel_group: 5
     tags: [phase-4, gateway]
     file: phase-4.md
