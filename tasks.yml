@@ -696,7 +696,7 @@ tasks:
       - Tests and docs entry added
 
   - title: "phase-8.md - Implement provider: elevenlabs"
-    completed: false
+    completed: true
     parallel_group: 9
     tags: [phase-8, provider, elevenlabs]
     file: phase-8.md
