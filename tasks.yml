@@ -27,7 +27,7 @@ tasks:
       - Mapping validated against ai-sdk-6/packages inventory
 
   - title: "phase-0.md - Decide module layout and module path"
-    completed: false
+    completed: true
     parallel_group: 1
     tags: [phase-0, module]
     file: phase-0.md
