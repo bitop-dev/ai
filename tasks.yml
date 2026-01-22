@@ -489,7 +489,7 @@ tasks:
       - Tests and docs entry added
 
   - title: "phase-8.md - Implement provider: groq"
-    completed: false
+    completed: true
     parallel_group: 9
     tags: [phase-8, provider, groq]
     file: phase-8.md

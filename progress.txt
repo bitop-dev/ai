@@ -43,3 +43,4 @@
 2026-01-22: Implemented the Amazon Bedrock provider with SigV4 signing, credential chain support, streaming parsing, tests, and documentation, and marked the task complete.
 2026-01-22: Added the Mistral provider with chat/embedding request mapping, tool/JSON response format handling, streaming support, tests, and documentation, and marked the task complete.
 2026-01-22: Implemented the Cohere provider with chat/embedding request mapping, streaming support, docs, tests, and recorded reranking deferral.
+2026-01-22: Added the Groq provider wrapper with default OpenAI-compatible settings, rate limit/error mapping coverage, tests, and documentation.
