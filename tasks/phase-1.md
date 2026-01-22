@@ -20,6 +20,7 @@
 - Minimum Go version: 1.22 for generics and `slices`, `cmp` helpers.
 - Version policy: semantic versioning with `v0` until core stability.
 - Single module for all packages; public imports use `<module>/pkg/<name>` and providers use `<module>/pkg/providers/<provider>`.
+- Module naming: all public packages live under `pkg/` and match their import path suffix.
 
 ### Public Package Naming
 - Core: `pkg/ai` -> `ai` import path `ai-sdk-go/pkg/ai`.
