@@ -808,7 +808,7 @@ tasks:
       - Used by provider unit tests
 
   - title: "phase-9.md - Add core unit tests"
-    completed: false
+    completed: true
     parallel_group: 10
     tags: [phase-9, tests]
     file: phase-9.md

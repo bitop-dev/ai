@@ -121,6 +121,100 @@ func TestGenerateTextWithToolsExecutesToolCalls(t *testing.T) {
 	}
 }
 
+func TestGenerateTextWithToolsMultipleCalls(t *testing.T) {
+	model := &toolLoopModel{responses: [][]provider.StreamPart{
+		{
+			{Type: provider.StreamPartTypeToolCall, ToolCall: &provider.ToolCall{ID: "call-1", Name: "weather", Arguments: map[string]any{"city": "SF"}}},
+			{Type: provider.StreamPartTypeToolCall, ToolCall: &provider.ToolCall{ID: "call-2", Name: "news", Arguments: map[string]any{"topic": "ai"}}},
+			{Type: provider.StreamPartTypeFinish, Finish: &provider.Finish{Reason: provider.FinishReasonToolCalls}},
+		},
+		{
+			{Type: provider.StreamPartTypeTextStart, TextStart: &provider.TextStart{Text: "done"}},
+			{Type: provider.StreamPartTypeFinish, Finish: &provider.Finish{Reason: provider.FinishReasonStop}},
+		},
+	}}
+
+	weather := providerutils.ToolDefinition{
+		Name: "weather",
+		Execute: func(ctx context.Context, call providerutils.ToolCall) (providerutils.ToolOutput, error) {
+			_ = ctx
+			_ = call
+			return providerutils.ToolTextOutput{Text: "sunny"}, nil
+		},
+	}
+	news := providerutils.ToolDefinition{
+		Name: "news",
+		Execute: func(ctx context.Context, call providerutils.ToolCall) (providerutils.ToolOutput, error) {
+			_ = ctx
+			_ = call
+			return providerutils.ToolTextOutput{Text: "fresh"}, nil
+		},
+	}
+
+	result, err := GenerateTextWithTools(context.Background(), model, ToolLoopOptions{
+		TextOptions: TextOptions{
+			Prompt: provider.Prompt{Messages: []provider.ModelMessage{{
+				Role:    provider.RoleUser,
+				Content: []provider.ContentPart{provider.TextContent{Text: "hi"}},
+			}}},
+		},
+		Tools:    []providerutils.ToolDefinition{weather, news},
+		MaxSteps: 3,
+	})
+	if err != nil {
+		t.Fatalf("GenerateTextWithTools returned error: %v", err)
+	}
+	if result.Text != "done" {
+		t.Fatalf("Text mismatch: got %q want %q", result.Text, "done")
+	}
+	if len(model.callOptions) != 2 {
+		t.Fatalf("expected 2 model calls, got %d", len(model.callOptions))
+	}
+
+	secondPrompt := model.callOptions[1].Prompt.Messages
+	if len(secondPrompt) != 4 {
+		t.Fatalf("expected 4 prompt messages, got %d", len(secondPrompt))
+	}
+	if secondPrompt[1].Role != provider.RoleAssistant {
+		t.Fatalf("assistant role mismatch: got %q", secondPrompt[1].Role)
+	}
+
+	var toolCalls []provider.ToolCall
+	for _, part := range secondPrompt[1].Content {
+		if callPart, ok := part.(provider.ToolCallContent); ok {
+			toolCalls = append(toolCalls, callPart.ToolCall)
+		}
+	}
+	if len(toolCalls) != 2 {
+		t.Fatalf("expected 2 tool calls, got %d", len(toolCalls))
+	}
+	if toolCalls[0].Name != "weather" || toolCalls[1].Name != "news" {
+		t.Fatalf("tool call order mismatch: got %#v", toolCalls)
+	}
+
+	if secondPrompt[2].Role != provider.RoleTool || secondPrompt[3].Role != provider.RoleTool {
+		t.Fatalf("expected tool role messages")
+	}
+	if secondPrompt[2].ToolCallID != "call-1" || secondPrompt[3].ToolCallID != "call-2" {
+		t.Fatalf("tool call ids mismatch: got %q and %q", secondPrompt[2].ToolCallID, secondPrompt[3].ToolCallID)
+	}
+
+	resultPart, ok := secondPrompt[2].Content[0].(provider.ToolResultContent)
+	if !ok {
+		t.Fatalf("expected ToolResultContent, got %T", secondPrompt[2].Content[0])
+	}
+	if resultPart.ToolResult.Result != "sunny" {
+		t.Fatalf("tool result mismatch: got %#v", resultPart.ToolResult.Result)
+	}
+	resultPart, ok = secondPrompt[3].Content[0].(provider.ToolResultContent)
+	if !ok {
+		t.Fatalf("expected ToolResultContent, got %T", secondPrompt[3].Content[0])
+	}
+	if resultPart.ToolResult.Result != "fresh" {
+		t.Fatalf("tool result mismatch: got %#v", resultPart.ToolResult.Result)
+	}
+}
+
 func TestGenerateTextWithToolsRejectsTool(t *testing.T) {
 	model := &toolLoopModel{responses: [][]provider.StreamPart{
 		{{Type: provider.StreamPartTypeToolCall, ToolCall: &provider.ToolCall{ID: "call-1", Name: "deny", Arguments: map[string]any{}}}},
