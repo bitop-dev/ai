@@ -85,15 +85,15 @@ func (p *GatewayProvider) SpecificationVersion() provider.SpecificationVersion {
 
 // LanguageModel returns a gateway language model.
 func (p *GatewayProvider) LanguageModel(modelID provider.ModelID) (provider.LanguageModelV3, error) {
-	return nil, provider.NewNoSuchModelError("gateway language models are not implemented", nil, p.providerID, modelID)
+	return newGatewayLanguageModel(p, modelID), nil
 }
 
 // EmbeddingModel returns a gateway embedding model.
 func (p *GatewayProvider) EmbeddingModel(modelID provider.ModelID) (provider.EmbeddingModelV3, error) {
-	return nil, provider.NewNoSuchModelError("gateway embedding models are not implemented", nil, p.providerID, modelID)
+	return newGatewayEmbeddingModel(p, modelID), nil
 }
 
 // ImageModel returns a gateway image model.
 func (p *GatewayProvider) ImageModel(modelID provider.ModelID) (provider.ImageModelV3, error) {
-	return nil, provider.NewNoSuchModelError("gateway image models are not implemented", nil, p.providerID, modelID)
+	return newGatewayImageModel(p, modelID), nil
 }

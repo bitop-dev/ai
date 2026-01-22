@@ -216,7 +216,7 @@ tasks:
       - Provider name override supported
 
   - title: "phase-4.md - Implement gateway model wrappers"
-    completed: false
+    completed: true
     parallel_group: 5
     tags: [phase-4, gateway]
     file: phase-4.md
