@@ -145,3 +145,98 @@ func TestAnthropicGenerateRequest(t *testing.T) {
 		t.Fatalf("generate: %v", err)
 	}
 }
+
+func TestAnthropicStream(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "test-key")
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/messages" {
+			t.Fatalf("unexpected path: %s", r.URL.Path)
+		}
+		var payload map[string]any
+		if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+			t.Fatalf("decode request: %v", err)
+		}
+		if payload["stream"] != true {
+			t.Fatalf("expected stream=true, got %#v", payload["stream"])
+		}
+
+		w.Header().Set("Content-Type", "text/event-stream")
+		w.Header().Set("x-request-id", "req-123")
+		flusher, _ := w.(http.Flusher)
+
+		fmt.Fprint(w, "data: {\"type\":\"message_start\",\"message\":{\"usage\":{\"input_tokens\":3}}}\n\n")
+		fmt.Fprint(w, "data: {\"type\":\"content_block_start\",\"index\":0,\"content_block\":{\"type\":\"text\",\"text\":\"\"}}\n\n")
+		fmt.Fprint(w, "data: {\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"text_delta\",\"text\":\"Hello\"}}\n\n")
+		fmt.Fprint(w, "data: {\"type\":\"content_block_stop\",\"index\":0}\n\n")
+		fmt.Fprint(w, "data: {\"type\":\"content_block_start\",\"index\":1,\"content_block\":{\"type\":\"thinking\",\"thinking\":\"\"}}\n\n")
+		fmt.Fprint(w, "data: {\"type\":\"content_block_delta\",\"index\":1,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\"Consider\"}}\n\n")
+		fmt.Fprint(w, "data: {\"type\":\"content_block_stop\",\"index\":1}\n\n")
+		fmt.Fprint(w, "data: {\"type\":\"content_block_start\",\"index\":2,\"content_block\":{\"type\":\"tool_use\",\"id\":\"toolu_1\",\"name\":\"weather\",\"input\":{}}}\n\n")
+		fmt.Fprint(w, "data: {\"type\":\"content_block_delta\",\"index\":2,\"delta\":{\"type\":\"input_json_delta\",\"partial_json\":\"{\\\"city\\\":\\\"LA\\\"}\"}}\n\n")
+		fmt.Fprint(w, "data: {\"type\":\"content_block_stop\",\"index\":2}\n\n")
+		fmt.Fprint(w, "data: {\"type\":\"message_delta\",\"delta\":{\"stop_reason\":\"end_turn\"},\"usage\":{\"output_tokens\":4}}\n\n")
+		fmt.Fprint(w, "data: {\"type\":\"message_stop\"}\n\n")
+		if flusher != nil {
+			flusher.Flush()
+		}
+	}))
+	defer server.Close()
+
+	client := CreateAnthropic(Settings{BaseURL: server.URL})
+	model, err := client.LanguageModel("claude-3")
+	if err != nil {
+		t.Fatalf("language model: %v", err)
+	}
+	result, err := model.DoStream(context.Background(), provider.LanguageModelV3CallOptions{
+		Prompt: provider.Prompt{Messages: []provider.ModelMessage{{Role: provider.RoleUser, Content: []provider.ContentPart{provider.TextContent{Text: "Hi"}}}}},
+	})
+	if err != nil {
+		t.Fatalf("stream: %v", err)
+	}
+	var parts []provider.StreamPart
+	for part := range result.Stream {
+		parts = append(parts, part)
+	}
+	if len(parts) < 10 {
+		t.Fatalf("expected stream parts, got %d", len(parts))
+	}
+	if parts[0].Type != provider.StreamPartTypeStreamStart {
+		t.Fatalf("expected stream start, got %v", parts[0].Type)
+	}
+	if parts[1].Type != provider.StreamPartTypeTextStart {
+		t.Fatalf("expected text start, got %v", parts[1].Type)
+	}
+	if parts[2].Type != provider.StreamPartTypeTextDelta || parts[2].TextDelta == nil || parts[2].TextDelta.Delta != "Hello" {
+		t.Fatalf("unexpected text delta: %#v", parts[2])
+	}
+	if parts[3].Type != provider.StreamPartTypeReasoningStart {
+		t.Fatalf("expected reasoning start, got %v", parts[3].Type)
+	}
+	if parts[4].Type != provider.StreamPartTypeReasoningDelta || parts[4].ReasoningDelta == nil || parts[4].ReasoningDelta.Delta != "Consider" {
+		t.Fatalf("unexpected reasoning delta: %#v", parts[4])
+	}
+	if parts[5].Type != provider.StreamPartTypeToolInputStart {
+		t.Fatalf("expected tool input start, got %v", parts[5].Type)
+	}
+	if parts[6].Type != provider.StreamPartTypeToolInputDelta || parts[6].ToolInputDelta == nil {
+		t.Fatalf("unexpected tool input delta: %#v", parts[6])
+	}
+	if parts[7].Type != provider.StreamPartTypeToolInputEnd {
+		t.Fatalf("expected tool input end, got %v", parts[7].Type)
+	}
+	if parts[8].Type != provider.StreamPartTypeToolCall || parts[8].ToolCall == nil || parts[8].ToolCall.Arguments["city"] != "LA" {
+		t.Fatalf("unexpected tool call: %#v", parts[8])
+	}
+	if parts[9].Type != provider.StreamPartTypeFinish || parts[9].Finish == nil {
+		t.Fatalf("unexpected finish: %#v", parts[9])
+	}
+	if parts[9].Finish.Reason != provider.FinishReasonStop {
+		t.Fatalf("unexpected finish reason: %#v", parts[9].Finish.Reason)
+	}
+	if parts[9].Finish.Usage == nil || parts[9].Finish.Usage.PromptTokens != 3 || parts[9].Finish.Usage.CompletionTokens != 4 {
+		t.Fatalf("unexpected usage: %#v", parts[9].Finish.Usage)
+	}
+	if parts[9].ResponseMetadata == nil || parts[9].ResponseMetadata.RequestID != "req-123" {
+		t.Fatalf("unexpected response metadata: %#v", parts[9].ResponseMetadata)
+	}
+}

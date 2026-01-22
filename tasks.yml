@@ -356,7 +356,7 @@ tasks:
       - Tool definitions and structured output supported
 
   - title: "phase-7.md - Implement Anthropic streaming support"
-    completed: false
+    completed: true
     parallel_group: 8
     tags: [phase-7, provider, anthropic, streaming]
     file: phase-7.md

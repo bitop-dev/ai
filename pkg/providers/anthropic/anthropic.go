@@ -1,9 +1,12 @@
 package anthropic
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"strings"
@@ -131,7 +134,95 @@ func (m *languageModel) DoGenerate(ctx context.Context, options provider.Languag
 }
 
 func (m *languageModel) DoStream(ctx context.Context, options provider.LanguageModelV3CallOptions) (provider.LanguageModelV3StreamResult, error) {
-	return provider.LanguageModelV3StreamResult{}, provider.NewUnsupportedFunctionalityError("anthropic streaming is not implemented", nil, "streaming")
+	payload, err := m.buildPayload(options)
+	if err != nil {
+		return provider.LanguageModelV3StreamResult{}, err
+	}
+	payload["stream"] = true
+
+	headers, err := m.provider.requestHeaders()
+	if err != nil {
+		return provider.LanguageModelV3StreamResult{}, err
+	}
+
+	body, err := json.Marshal(payload)
+	if err != nil {
+		return provider.LanguageModelV3StreamResult{}, err
+	}
+
+	baseHeaders := map[string]string{"Content-Type": "application/json"}
+	for key, value := range headers {
+		baseHeaders[key] = value
+	}
+	req, cancel, err := providerutils.BuildRequest(ctx, http.MethodPost, m.provider.endpoint("/messages"), bytes.NewReader(body), baseHeaders, options.RequestOptions)
+	if err != nil {
+		return provider.LanguageModelV3StreamResult{}, err
+	}
+	if cancel != nil {
+		defer cancel()
+	}
+
+	client := m.provider.httpClient
+	if client == nil {
+		client = http.DefaultClient
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		return provider.LanguageModelV3StreamResult{}, err
+	}
+	if resp.StatusCode >= http.StatusBadRequest {
+		defer resp.Body.Close()
+		body, _ := io.ReadAll(resp.Body)
+		return provider.LanguageModelV3StreamResult{}, newAnthropicAPIError(resp.StatusCode, body, resp.Header, m.provider.providerID, m.modelID)
+	}
+
+	responseHeaders := cloneHeaders(resp.Header)
+	responseMetadata := &provider.ResponseMetadata{
+		RequestID:  resp.Header.Get("x-request-id"),
+		HTTPStatus: resp.StatusCode,
+		Headers:    responseHeaders,
+	}
+
+	stream := make(chan provider.StreamPart)
+	result := provider.LanguageModelV3StreamResult{
+		Stream: stream,
+		Request: &provider.LanguageModelV3Request{
+			Body: payload,
+		},
+		Response: &provider.LanguageModelV3Response{Headers: responseHeaders},
+	}
+
+	state := &anthropicStreamState{
+		includeRaw:      options.IncludeRawChunks,
+		toolAccumulator: providerutils.NewToolArgumentAccumulator(),
+		blockTypes:      map[int]string{},
+		toolCalls:       map[int]anthropicToolCall{},
+	}
+
+	go func() {
+		defer close(stream)
+		defer resp.Body.Close()
+		stream <- provider.StreamPart{
+			Type:        provider.StreamPartTypeStreamStart,
+			StreamStart: &provider.StreamStart{ProviderID: m.provider.providerID, ModelID: m.modelID},
+		}
+		parseErr := providerutils.ParseSSE(ctx, resp.Body, providerutils.SSEParseOptions{
+			OnEvent: func(event providerutils.SSEEvent) error {
+				if event.Data == "" {
+					return nil
+				}
+				if state.includeRaw {
+					stream <- rawStreamPart(event.Data)
+				}
+				return handleAnthropicEvent(stream, state, event.Data, responseMetadata)
+			},
+		})
+		if parseErr != nil && !errors.Is(parseErr, context.Canceled) && !errors.Is(parseErr, io.EOF) {
+			stream <- provider.StreamPart{Type: provider.StreamPartTypeError, Error: &provider.StreamError{Err: parseErr}}
+		}
+	}()
+
+	return result, nil
 }
 
 func (m *languageModel) buildPayload(options provider.LanguageModelV3CallOptions) (map[string]any, error) {
@@ -503,6 +594,227 @@ func mergeRequestOptions(options provider.RequestOptions, headers map[string]str
 	merged := options
 	merged.Headers = providerutils.MergeHeaders(headers, options.Headers)
 	return merged
+}
+
+type anthropicStreamState struct {
+	includeRaw      bool
+	toolAccumulator *providerutils.ToolArgumentAccumulator
+	blockTypes      map[int]string
+	toolCalls       map[int]anthropicToolCall
+	usage           anthropicUsage
+	finishReason    string
+	finishSent      bool
+}
+
+type anthropicToolCall struct {
+	ID   string
+	Name string
+}
+
+type anthropicUsage struct {
+	InputTokens  int `json:"input_tokens"`
+	OutputTokens int `json:"output_tokens"`
+}
+
+type anthropicMessageDelta struct {
+	StopReason   string `json:"stop_reason"`
+	StopSequence string `json:"stop_sequence"`
+}
+
+type anthropicContentBlock struct {
+	Type     string         `json:"type"`
+	Text     string         `json:"text"`
+	Thinking string         `json:"thinking"`
+	ID       string         `json:"id"`
+	Name     string         `json:"name"`
+	Input    map[string]any `json:"input"`
+}
+
+type anthropicContentDelta struct {
+	Type        string `json:"type"`
+	Text        string `json:"text"`
+	Thinking    string `json:"thinking"`
+	PartialJSON string `json:"partial_json"`
+}
+
+func handleAnthropicEvent(stream chan<- provider.StreamPart, state *anthropicStreamState, data string, metadata *provider.ResponseMetadata) error {
+	var envelope struct {
+		Type string `json:"type"`
+	}
+	if err := json.Unmarshal([]byte(data), &envelope); err != nil {
+		return err
+	}
+
+	switch envelope.Type {
+	case "ping":
+		return nil
+	case "message_start":
+		var event struct {
+			Message struct {
+				Usage anthropicUsage `json:"usage"`
+			} `json:"message"`
+		}
+		if err := json.Unmarshal([]byte(data), &event); err != nil {
+			return err
+		}
+		if event.Message.Usage.InputTokens != 0 {
+			state.usage.InputTokens = event.Message.Usage.InputTokens
+		}
+		return nil
+	case "content_block_start":
+		var event struct {
+			Index        int                   `json:"index"`
+			ContentBlock anthropicContentBlock `json:"content_block"`
+		}
+		if err := json.Unmarshal([]byte(data), &event); err != nil {
+			return err
+		}
+		switch event.ContentBlock.Type {
+		case "text":
+			state.blockTypes[event.Index] = "text"
+			stream <- provider.StreamPart{Type: provider.StreamPartTypeTextStart, TextStart: &provider.TextStart{Text: event.ContentBlock.Text}}
+		case "thinking", "redacted_thinking":
+			state.blockTypes[event.Index] = "reasoning"
+			text := event.ContentBlock.Thinking
+			stream <- provider.StreamPart{Type: provider.StreamPartTypeReasoningStart, ReasoningStart: &provider.ReasoningStart{Text: text}}
+		case "tool_use":
+			state.blockTypes[event.Index] = "tool_use"
+			state.toolCalls[event.Index] = anthropicToolCall{ID: event.ContentBlock.ID, Name: event.ContentBlock.Name}
+			state.toolAccumulator.Start(event.ContentBlock.ID, event.ContentBlock.Name)
+			stream <- provider.StreamPart{Type: provider.StreamPartTypeToolInputStart, ToolInputStart: &provider.ToolInputStart{ToolCallID: event.ContentBlock.ID, Name: event.ContentBlock.Name}}
+			if len(event.ContentBlock.Input) > 0 {
+				payload, err := json.Marshal(event.ContentBlock.Input)
+				if err != nil {
+					return err
+				}
+				delta := string(payload)
+				if err := state.toolAccumulator.AddDelta(event.ContentBlock.ID, delta); err != nil {
+					return err
+				}
+				stream <- provider.StreamPart{Type: provider.StreamPartTypeToolInputDelta, ToolInputDelta: &provider.ToolInputDelta{ToolCallID: event.ContentBlock.ID, Delta: delta}}
+			}
+		}
+		return nil
+	case "content_block_delta":
+		var event struct {
+			Index int                   `json:"index"`
+			Delta anthropicContentDelta `json:"delta"`
+		}
+		if err := json.Unmarshal([]byte(data), &event); err != nil {
+			return err
+		}
+		switch event.Delta.Type {
+		case "text_delta":
+			if event.Delta.Text != "" {
+				stream <- provider.StreamPart{Type: provider.StreamPartTypeTextDelta, TextDelta: &provider.TextDelta{Delta: event.Delta.Text}}
+			}
+		case "thinking_delta":
+			if event.Delta.Thinking != "" {
+				stream <- provider.StreamPart{Type: provider.StreamPartTypeReasoningDelta, ReasoningDelta: &provider.ReasoningDelta{Delta: event.Delta.Thinking}}
+			}
+		case "input_json_delta":
+			call, ok := state.toolCalls[event.Index]
+			if !ok {
+				return nil
+			}
+			if event.Delta.PartialJSON != "" {
+				if err := state.toolAccumulator.AddDelta(call.ID, event.Delta.PartialJSON); err != nil {
+					return err
+				}
+				stream <- provider.StreamPart{Type: provider.StreamPartTypeToolInputDelta, ToolInputDelta: &provider.ToolInputDelta{ToolCallID: call.ID, Delta: event.Delta.PartialJSON}}
+			}
+		}
+		return nil
+	case "content_block_stop":
+		var event struct {
+			Index int `json:"index"`
+		}
+		if err := json.Unmarshal([]byte(data), &event); err != nil {
+			return err
+		}
+		blockType := state.blockTypes[event.Index]
+		delete(state.blockTypes, event.Index)
+		if blockType == "tool_use" {
+			call, ok := state.toolCalls[event.Index]
+			if !ok {
+				return nil
+			}
+			delete(state.toolCalls, event.Index)
+			toolCall, err := state.toolAccumulator.End(call.ID)
+			if err != nil {
+				stream <- provider.StreamPart{Type: provider.StreamPartTypeError, Error: &provider.StreamError{Err: err}}
+				return nil
+			}
+			stream <- provider.StreamPart{Type: provider.StreamPartTypeToolInputEnd, ToolInputEnd: &provider.ToolInputEnd{ToolCallID: call.ID}}
+			stream <- provider.StreamPart{Type: provider.StreamPartTypeToolCall, ToolCall: &toolCall}
+		}
+		return nil
+	case "message_delta":
+		var event struct {
+			Delta anthropicMessageDelta `json:"delta"`
+			Usage anthropicUsage        `json:"usage"`
+		}
+		if err := json.Unmarshal([]byte(data), &event); err != nil {
+			return err
+		}
+		if event.Usage.OutputTokens != 0 {
+			state.usage.OutputTokens = event.Usage.OutputTokens
+		}
+		if event.Delta.StopReason != "" {
+			state.finishReason = event.Delta.StopReason
+			emitAnthropicFinish(stream, state, metadata)
+		}
+		return nil
+	case "message_stop":
+		emitAnthropicFinish(stream, state, metadata)
+		return nil
+	default:
+		return nil
+	}
+}
+
+func emitAnthropicFinish(stream chan<- provider.StreamPart, state *anthropicStreamState, metadata *provider.ResponseMetadata) {
+	if state.finishSent {
+		return
+	}
+	state.finishSent = true
+	finish := provider.Finish{Reason: mapAnthropicFinishReason(state.finishReason), Usage: usageFromAnthropic(state.usage)}
+	stream <- provider.StreamPart{Type: provider.StreamPartTypeFinish, Finish: &finish, ResponseMetadata: metadata}
+}
+
+func mapAnthropicFinishReason(reason string) provider.FinishReason {
+	switch reason {
+	case "pause_turn", "end_turn", "stop_sequence":
+		return provider.FinishReasonStop
+	case "refusal":
+		return provider.FinishReasonContentFilter
+	case "tool_use":
+		return provider.FinishReasonToolCalls
+	case "max_tokens", "model_context_window_exceeded":
+		return provider.FinishReasonLength
+	default:
+		return provider.FinishReasonOther
+	}
+}
+
+func usageFromAnthropic(usage anthropicUsage) *provider.LanguageModelUsage {
+	if usage.InputTokens == 0 && usage.OutputTokens == 0 {
+		return nil
+	}
+	total := usage.InputTokens + usage.OutputTokens
+	return &provider.LanguageModelUsage{
+		PromptTokens:     usage.InputTokens,
+		CompletionTokens: usage.OutputTokens,
+		TotalTokens:      total,
+	}
+}
+
+func rawStreamPart(data string) provider.StreamPart {
+	var payload any
+	if err := json.Unmarshal([]byte(data), &payload); err != nil {
+		payload = data
+	}
+	return provider.StreamPart{Type: provider.StreamPartTypeRaw, Raw: payload}
 }
 
 func newAnthropicAPIError(status int, body []byte, headers http.Header, providerID provider.ProviderID, modelID provider.ModelID) error {

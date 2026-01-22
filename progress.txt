@@ -32,3 +32,4 @@
 2026-01-22: Added OpenAI streaming tool-call handling coverage, mapped function_call finish reason, and marked the Phase 6 streaming task complete.
 2026-01-22: Added OpenAI request mapping tests for chat and completions, documented the OpenAI provider, and marked the Phase 6 tests/docs task complete.
 2026-01-22: Added the Anthropic provider with request mapping for messages/tools/structured output, wrote tests for payload construction, and marked the Phase 7 provider task complete.
+2026-01-22: Implemented Anthropic streaming SSE handling with tool/reasoning mapping, added streaming tests, and marked the Phase 7 streaming task complete.
