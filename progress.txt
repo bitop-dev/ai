@@ -55,3 +55,4 @@
 2026-01-22: Implemented fal provider with image/speech/transcription support, added polling and payload tests, documented usage, and marked the task complete.
 2026-01-22: Implemented Prodia provider with image payload mapping, multipart response validation, tests, and documentation.
 2026-01-22: Added Baseten image provider with request/response mapping, error handling, tests, and documentation.
+2026-01-22: Implemented the Black Forest Labs image provider with polling, request mapping, tests for payload/base64 handling, and documentation.

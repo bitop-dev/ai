@@ -644,7 +644,7 @@ tasks:
       - Tests and docs entry added
 
   - title: "phase-8.md - Implement provider: black-forest-labs"
-    completed: false
+    completed: true
     parallel_group: 9
     tags: [phase-8, provider, black-forest-labs]
     file: phase-8.md
