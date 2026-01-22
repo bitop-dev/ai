@@ -9,3 +9,4 @@
 2026-01-21: Documented telemetry hook interface and OpenTelemetry stance in Phase 1 docs, added telemetry doc tests, and marked the task complete.
 2026-01-21: Added initial Go module and provider v3 interfaces with stubbed call/result types plus compile-time interface tests for models and providers.
 2026-01-21: Added provider prompt/message content types with tool call/result structs, plus tests for content part variants.
+2026-01-21: Implemented provider error taxonomy and helpers with tests, and marked the Phase 2 error task complete.

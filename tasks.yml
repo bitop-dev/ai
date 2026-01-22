@@ -110,7 +110,7 @@ tasks:
       - Tool call and tool result types defined
 
   - title: "phase-2.md - Implement error taxonomy and helpers"
-    completed: false
+    completed: true
     parallel_group: 3
     tags: [phase-2, errors]
     file: phase-2.md
