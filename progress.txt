@@ -12,3 +12,4 @@
 2026-01-21: Implemented provider error taxonomy and helpers with tests, and marked the Phase 2 error task complete.
 2026-01-22: Added provider stream part/usage types with warning and metadata support plus tests, and marked the Phase 2 streaming task complete.
 2026-01-22: Added provider JSON value/schema types plus request/tool/response option structs with tests, and marked the Phase 2 JSON types task complete.
+2026-01-22: Implemented providerutils tool helpers (definitions, outputs, name mapping, stream part helpers, argument accumulator) with tests, and marked the Phase 3 tool task complete.
