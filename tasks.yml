@@ -259,7 +259,7 @@ tasks:
       - Embed/GenerateImage/GenerateSpeech/Transcribe/Rerank implemented
 
   - title: "phase-5.md - Implement tool loop orchestration"
-    completed: false
+    completed: true
     parallel_group: 6
     tags: [phase-5, tools]
     file: phase-5.md
