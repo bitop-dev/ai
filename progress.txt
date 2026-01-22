@@ -56,3 +56,4 @@
 2026-01-22: Implemented Prodia provider with image payload mapping, multipart response validation, tests, and documentation.
 2026-01-22: Added Baseten image provider with request/response mapping, error handling, tests, and documentation.
 2026-01-22: Implemented the Black Forest Labs image provider with polling, request mapping, tests for payload/base64 handling, and documentation.
+2026-01-22: Implemented the Luma image provider with polling, reference image options, tests, and documentation, and marked the Phase 8 Luma task complete.
