@@ -183,7 +183,7 @@ tasks:
       - Retry/backoff helpers implemented
 
   - title: "phase-3.md - Implement SSE parsing and response writer"
-    completed: false
+    completed: true
     parallel_group: 4
     tags: [phase-3, streaming]
     file: phase-3.md
