@@ -30,6 +30,8 @@
     providerutils/      # tools, schema types, stream parsing, helpers
     registry/           # provider registry and middleware
     gateway/            # Vercel gateway provider
+    mcp/                # MCP client and tool bridge
+    adapters/           # framework and model adapters (langchain, llamaindex)
     providers/
       openai/
       anthropic/
@@ -59,17 +61,63 @@
 - Tests live next to sources and mirror file names with `_test.go`.
 
 ## Mapping from TypeScript Monorepo
+### Core packages
 - `packages/ai` -> `pkg/ai`
 - `packages/provider` -> `pkg/provider`
 - `packages/provider-utils` -> `pkg/providerutils`
 - `packages/gateway` -> `pkg/gateway`
-- `packages/openai-compatible` -> `pkg/providers/openai-compatible`
-- `packages/<provider>` -> `pkg/providers/<provider>`
 - `packages/mcp` -> `pkg/mcp`
-- UI/framework packages (`react`, `vue`, `svelte`, `rsc`, `angular`) -> Go examples or HTTP helpers as needed.
-- Codemod, devtools, and JS build packages are not ported.
 - `packages/test-server` -> `internal/testserver` (Go-native test fixtures)
 - `packages/valibot` -> not ported; replace with schema adapter in `pkg/providerutils`
+- `packages/devtools` -> not ported; replace with Go-native tooling or scripts under `cmd/` if needed
+- `packages/codemod` -> not ported; migration guidance lives in `docs/migration`
+
+### Provider packages (Go in `pkg/providers/<provider>`)
+- `packages/amazon-bedrock`
+- `packages/anthropic`
+- `packages/assemblyai`
+- `packages/azure`
+- `packages/baseten`
+- `packages/black-forest-labs`
+- `packages/cerebras`
+- `packages/cohere`
+- `packages/deepgram`
+- `packages/deepinfra`
+- `packages/deepseek`
+- `packages/elevenlabs`
+- `packages/fal`
+- `packages/fireworks`
+- `packages/gladia`
+- `packages/google`
+- `packages/google-vertex`
+- `packages/groq`
+- `packages/hume`
+- `packages/lmnt`
+- `packages/luma`
+- `packages/mistral`
+- `packages/openai`
+- `packages/openai-compatible`
+- `packages/perplexity`
+- `packages/prodia`
+- `packages/replicate`
+- `packages/revai`
+- `packages/togetherai`
+- `packages/vercel`
+- `packages/xai`
+
+### Adapter and framework bridge packages
+- `packages/huggingface` -> `pkg/adapters/huggingface`
+- `packages/langchain` -> `pkg/adapters/langchain`
+- `packages/llamaindex` -> `pkg/adapters/llamaindex`
+
+### UI integrations (not ported)
+- `packages/angular` -> not ported; use Go examples and docs for integration patterns
+- `packages/react` -> not ported; use Go examples and docs for integration patterns
+- `packages/rsc` -> not ported; use Go examples and docs for integration patterns
+- `packages/svelte` -> not ported; use Go examples and docs for integration patterns
+- `packages/vue` -> not ported; use Go examples and docs for integration patterns
+
+Inventory validated against `ai-sdk-6/packages` directory listing on 2026-01-21.
 
 ## Documentation Layout
 - Phase docs remain in `tasks/` and act as the project roadmap.

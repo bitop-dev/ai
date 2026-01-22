@@ -1,1 +1,2 @@
 2026-01-21: Documented repository naming conventions in `tasks/phase-0.md`, added phase-0 documentation tests, and marked the task complete.
+2026-01-21: Expanded `tasks/phase-0.md` with full ai-sdk-6 package mapping (including exclusions), updated documentation tests for the inventory, and marked the mapping task complete.

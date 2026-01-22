@@ -17,7 +17,7 @@ tasks:
       - Naming conventions and import paths listed
 
   - title: "phase-0.md - Map TS packages to Go packages and note exclusions"
-    completed: false
+    completed: true
     parallel_group: 1
     tags: [phase-0, mapping]
     file: phase-0.md
