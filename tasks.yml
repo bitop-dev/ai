@@ -193,7 +193,7 @@ tasks:
       - SSE encoder/pipe helper for http.ResponseWriter
 
   - title: "phase-3.md - Implement misc utilities"
-    completed: false
+    completed: true
     parallel_group: 4
     tags: [phase-3, utils]
     file: phase-3.md
