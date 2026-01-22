@@ -289,7 +289,7 @@ tasks:
       - Middleware hooks supported
 
   - title: "phase-5.md - Implement stream helpers for HTTP"
-    completed: false
+    completed: true
     parallel_group: 6
     tags: [phase-5, streaming]
     file: phase-5.md

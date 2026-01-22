@@ -1,6 +1,9 @@
 package ai
 
-import "context"
+import (
+	"context"
+	"sync/atomic"
+)
 
 // Stream provides an iterator-style wrapper over a channel.
 type Stream[T any] struct {
@@ -9,7 +12,7 @@ type Stream[T any] struct {
 	ch     <-chan T
 	value  T
 	err    error
-	closed bool
+	closed atomic.Bool
 }
 
 func newStream[T any](ctx context.Context, cancel context.CancelFunc, ch <-chan T) *Stream[T] {
@@ -30,7 +33,7 @@ func newStream[T any](ctx context.Context, cancel context.CancelFunc, ch <-chan 
 
 // Next advances the iterator and reports whether a value is available.
 func (s *Stream[T]) Next() bool {
-	if s.closed {
+	if s.closed.Load() {
 		return false
 	}
 	select {
@@ -38,11 +41,11 @@ func (s *Stream[T]) Next() bool {
 		if s.err == nil {
 			s.err = s.ctx.Err()
 		}
-		s.closed = true
+		s.closed.Store(true)
 		return false
 	case value, ok := <-s.ch:
 		if !ok {
-			s.closed = true
+			s.closed.Store(true)
 			return false
 		}
 		s.value = value
@@ -62,8 +65,8 @@ func (s *Stream[T]) Err() error {
 
 // Close cancels the stream and makes Next return false.
 func (s *Stream[T]) Close() {
+	s.closed.Store(true)
 	if s.cancel != nil {
 		s.cancel()
 	}
-	s.closed = true
 }
