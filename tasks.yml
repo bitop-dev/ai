@@ -389,7 +389,7 @@ tasks:
       - Checklist for streaming/tool mapping included
 
   - title: "phase-8.md - Implement provider: openai-compatible"
-    completed: false
+    completed: true
     parallel_group: 9
     tags: [phase-8, provider, openai-compatible]
     file: phase-8.md
