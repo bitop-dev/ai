@@ -631,7 +631,7 @@ tasks:
       - Tests and docs entry added
 
   - title: "phase-8.md - Implement provider: baseten"
-    completed: false
+    completed: true
     parallel_group: 9
     tags: [phase-8, provider, baseten]
     file: phase-8.md

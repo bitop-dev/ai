@@ -54,3 +54,4 @@
 2026-01-22: Added Replicate provider with async prediction polling, request option mapping, tests, and documentation.
 2026-01-22: Implemented fal provider with image/speech/transcription support, added polling and payload tests, documented usage, and marked the task complete.
 2026-01-22: Implemented Prodia provider with image payload mapping, multipart response validation, tests, and documentation.
+2026-01-22: Added Baseten image provider with request/response mapping, error handling, tests, and documentation.
