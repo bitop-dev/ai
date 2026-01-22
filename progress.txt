@@ -50,3 +50,4 @@
 2026-01-22: Added the Perplexity provider with citation stream mapping, usage metadata, tests, and documentation.
 2026-01-22: Implemented the Cerebras provider with OpenAI-compatible defaults, max token mapping tests, streaming coverage, and documentation.
 2026-01-22: Added Fireworks provider wrapper with safety/response metadata mapping, streaming tests, docs, and marked the Phase 8 task complete.
+2026-01-22: Implemented DeepInfra provider with OpenAI-compatible language/embedding support, image inference handling, tests, and documentation.
