@@ -87,9 +87,11 @@ if err := ai.PipeStream(ctx, w, result.Stream); err != nil {
 - `examples/multi_turn_chat/main.go`
 - `examples/streaming_sse/main.go`
 - `examples/gateway_streaming/main.go`
+- `examples/registry_usage/main.go`
 - `examples/tool_calling_auto/main.go`
 - `examples/tool_calling_manual/main.go`
 - `examples/structured_output/main.go`
+- `examples/providerutils_json/main.go`
 - `examples/embeddings_rerank/main.go`
 - `examples/image_generation/main.go`
 - `examples/speech_generation/main.go`
