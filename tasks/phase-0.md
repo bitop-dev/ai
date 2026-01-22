@@ -129,6 +129,9 @@ Inventory validated against `ai-sdk-6/packages` directory listing on 2026-01-21.
 - Integration tests: grouped by provider and guarded by env vars.
 - Examples: runnable Go programs in `examples/` with minimal dependencies.
 
+## Decision Rationale
+- Rationale and tradeoffs captured in `tasks/phase-decision-0.md`.
+
 ## Deliverables
 - Directory map and naming conventions.
 - Written mapping between TS packages and Go packages.

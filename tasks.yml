@@ -15,9 +15,10 @@ tasks:
       - Top-level layout documented (cmd, internal, pkg, examples, docs)
       - Public vs internal package rules stated
       - Naming conventions and import paths listed
+      - decision rationale in tasks directory documented in phase-decision-0.md doc
 
   - title: "phase-0.md - Map TS packages to Go packages and note exclusions"
-    completed: true
+    completed: false
     parallel_group: 1
     tags: [phase-0, mapping]
     file: phase-0.md
@@ -25,9 +26,10 @@ tasks:
       - Each ai-sdk-6 package mapped to a Go package or noted as not ported
       - Non-ported packages list replacement approach
       - Mapping validated against ai-sdk-6/packages inventory
+      - decision rationale in tasks directory documented in phase-decision-0.md doc
 
   - title: "phase-0.md - Decide module layout and module path"
-    completed: true
+    completed: false
     parallel_group: 1
     tags: [phase-0, module]
     file: phase-0.md
@@ -35,6 +37,7 @@ tasks:
       - Single vs multi-module decision recorded
       - Module path chosen and documented
       - Public package boundaries aligned with module decision
+      - decision rationale in tasks directory documented in phase-decision-0.md doc
 
   # ===========================================================================
   # PARALLEL GROUP 2: Phase 1 - Foundation and Layout
@@ -48,6 +51,7 @@ tasks:
       - Go version, module path, and version policy documented
       - Module naming conventions confirmed
       - Decision recorded in phase doc
+      - decision rationale in tasks directory documented in phase-decision-1.md doc
 
   - title: "phase-1.md - Decide streaming API shape and request options"
     completed: false
@@ -58,6 +62,7 @@ tasks:
       - Iterator vs channel choice recorded
       - Request options shape defined (headers, timeout, idempotency)
       - Context cancellation strategy documented
+      - decision rationale in tasks directory documented in phase-decision-1.md doc
 
   - title: "phase-1.md - Choose schema validation and dependency policy"
     completed: false
@@ -68,6 +73,7 @@ tasks:
       - Default JSON schema library selected
       - Pluggable validation interface documented
       - Dependency policy recorded (stdlib-first, minimal deps)
+      - decision rationale in tasks directory documented in phase-decision-1.md doc
 
   - title: "phase-1.md - Define telemetry hook interface"
     completed: false
@@ -78,6 +84,7 @@ tasks:
       - Telemetry interface defined (timing, usage, errors)
       - Optional/no-op behavior documented
       - OpenTelemetry scope decision recorded
+      - decision rationale in tasks directory documented in phase-decision-1.md doc
 
   # ===========================================================================
   # PARALLEL GROUP 3: Phase 2 - provider package
