@@ -69,3 +69,4 @@
 2026-01-22: Added the LlamaIndex adapter wrapper with OpenAI-compatible defaults, streaming/tool-call tests, documentation, and marked the task complete.
 2026-01-22: Added internal testserver helpers for captured requests/responses, updated Hugging Face tests to use the helper, and added test coverage for the new fixture.
 2026-01-22: Added multi-tool core tool loop coverage, ran the full test suite, and marked the Phase 9 core unit test task complete.
+2026-01-22: Added OpenAI/Anthropic integration tests with env gating and streaming coverage, ran the full Go test suite, and marked the Phase 9 integration tests task complete.

@@ -818,7 +818,7 @@ tasks:
       - Error classification tests added
 
   - title: "phase-9.md - Add provider integration tests"
-    completed: false
+    completed: true
     parallel_group: 10
     tags: [phase-9, tests]
     file: phase-9.md
