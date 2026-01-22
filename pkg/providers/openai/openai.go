@@ -745,6 +745,8 @@ func mapFinishReason(reason string) provider.FinishReason {
 		return provider.FinishReasonLength
 	case "tool_calls":
 		return provider.FinishReasonToolCalls
+	case "function_call":
+		return provider.FinishReasonToolCalls
 	case "content_filter":
 		return provider.FinishReasonContentFilter
 	default:

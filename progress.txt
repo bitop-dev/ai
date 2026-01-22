@@ -29,3 +29,4 @@
 2026-01-22: Added ai stream HTTP helpers with SSE serialization and cancellation handling, added tests for streaming response output/cancel behavior, and marked the Phase 5 stream helper task complete.
 2026-01-22: Added core telemetry interfaces with stream hooks, wired telemetry into text/object APIs, added telemetry tests, and marked the Phase 5 telemetry task complete.
 2026-01-22: Implemented OpenAI provider factory and model adapters with streaming parsing plus embeddings/images/speech/transcription requests, added tests, and marked the Phase 6 provider task complete.
+2026-01-22: Added OpenAI streaming tool-call handling coverage, mapped function_call finish reason, and marked the Phase 6 streaming task complete.

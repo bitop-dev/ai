@@ -323,7 +323,7 @@ tasks:
       - Tool mapping and response format supported
 
   - title: "phase-6.md - Implement OpenAI streaming support"
-    completed: false
+    completed: true
     parallel_group: 7
     tags: [phase-6, provider, openai, streaming]
     file: phase-6.md

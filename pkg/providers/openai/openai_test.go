@@ -185,6 +185,56 @@ func TestOpenAIResponsesStream(t *testing.T) {
 	}
 }
 
+func TestOpenAIChatStreamToolCalls(t *testing.T) {
+	t.Setenv("OPENAI_API_KEY", "test-key")
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/chat/completions" {
+			t.Fatalf("unexpected path: %s", r.URL.Path)
+		}
+		w.Header().Set("Content-Type", "text/event-stream")
+		flusher := w.(http.Flusher)
+		write := func(data string) {
+			fmt.Fprintf(w, "data: %s\n\n", data)
+			flusher.Flush()
+		}
+		write(`{"choices":[{"delta":{"tool_calls":[{"id":"call-1","type":"function","function":{"name":"weather","arguments":"{\"city\""}}]}}]}`)
+		write(`{"choices":[{"delta":{"tool_calls":[{"id":"call-1","type":"function","function":{"arguments":":\"LA\"}"}}]}}]}`)
+		write(`{"choices":[{"delta":{},"finish_reason":"function_call"}]}`)
+	}))
+	defer server.Close()
+
+	client := CreateOpenAI(Settings{BaseURL: server.URL})
+	model, err := client.LanguageModel("gpt-4")
+	if err != nil {
+		t.Fatalf("language model: %v", err)
+	}
+	result, err := model.DoStream(context.Background(), provider.LanguageModelV3CallOptions{
+		Prompt: provider.Prompt{Messages: []provider.ModelMessage{{Role: provider.RoleUser, Content: []provider.ContentPart{provider.TextContent{Text: "Hi"}}}}},
+	})
+	if err != nil {
+		t.Fatalf("stream: %v", err)
+	}
+	parts := collectParts(result.Stream)
+	if len(parts) != 7 {
+		t.Fatalf("expected 7 parts, got %d", len(parts))
+	}
+	if parts[1].ToolInputStart == nil || parts[1].ToolInputStart.Name != "weather" {
+		t.Fatalf("unexpected tool input start: %#v", parts[1].ToolInputStart)
+	}
+	if parts[2].ToolInputDelta == nil || parts[2].ToolInputDelta.Delta != `{"city"` {
+		t.Fatalf("unexpected tool input delta: %#v", parts[2].ToolInputDelta)
+	}
+	if parts[3].ToolInputDelta == nil || parts[3].ToolInputDelta.Delta != `:"LA"}` {
+		t.Fatalf("unexpected tool input delta: %#v", parts[3].ToolInputDelta)
+	}
+	if parts[5].ToolCall == nil || parts[5].ToolCall.Name != "weather" {
+		t.Fatalf("unexpected tool call: %#v", parts[5].ToolCall)
+	}
+	if parts[6].Finish == nil || parts[6].Finish.Reason != provider.FinishReasonToolCalls {
+		t.Fatalf("unexpected finish: %#v", parts[6].Finish)
+	}
+}
+
 func TestOpenAIEmbeddingsRequest(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/embeddings" {
