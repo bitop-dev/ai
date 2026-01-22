@@ -15,3 +15,4 @@
 2026-01-22: Implemented providerutils tool helpers (definitions, outputs, name mapping, stream part helpers, argument accumulator) with tests, and marked the Phase 3 tool task complete.
 2026-01-22: Added providerutils schema helpers (schema wrapper, validation interface, strict/lenient helpers) with tests, and marked the Phase 3 schema task complete.
 2026-01-22: Implemented providerutils JSON parsing helpers with validation-aware errors, added JSON conversion utilities and tests, and marked the Phase 3 JSON parsing task complete.
+2026-01-22: Added providerutils HTTP utilities (PostJSON/PostMultipart, request option merging, retry/backoff helpers) with tests, and marked the Phase 3 HTTP task complete.

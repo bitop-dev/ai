@@ -173,7 +173,7 @@ tasks:
       - Helpers convert data to JSONValue
 
   - title: "phase-3.md - Implement HTTP utilities and retry policy"
-    completed: false
+    completed: true
     parallel_group: 4
     tags: [phase-3, http]
     file: phase-3.md
