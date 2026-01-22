@@ -366,7 +366,7 @@ tasks:
       - Finish reason mapping implemented
 
   - title: "phase-7.md - Add Anthropic tests and docs"
-    completed: false
+    completed: true
     parallel_group: 8
     tags: [phase-7, provider, anthropic, tests]
     file: phase-7.md

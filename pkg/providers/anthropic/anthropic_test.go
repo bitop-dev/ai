@@ -3,6 +3,7 @@ package anthropic
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -238,5 +239,41 @@ func TestAnthropicStream(t *testing.T) {
 	}
 	if parts[9].ResponseMetadata == nil || parts[9].ResponseMetadata.RequestID != "req-123" {
 		t.Fatalf("unexpected response metadata: %#v", parts[9].ResponseMetadata)
+	}
+}
+
+func TestAnthropicErrorMapping(t *testing.T) {
+	t.Setenv("ANTHROPIC_API_KEY", "test-key")
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("x-request-id", "req-err")
+		w.WriteHeader(http.StatusTooManyRequests)
+		fmt.Fprint(w, `{"error":{"message":"rate limited"}}`)
+	}))
+	defer server.Close()
+
+	client := CreateAnthropic(Settings{BaseURL: server.URL})
+	model, err := client.LanguageModel("claude-3")
+	if err != nil {
+		t.Fatalf("language model: %v", err)
+	}
+	_, err = model.DoGenerate(context.Background(), provider.LanguageModelV3CallOptions{
+		Prompt: provider.Prompt{Messages: []provider.ModelMessage{{Role: provider.RoleUser, Content: []provider.ContentPart{provider.TextContent{Text: "Hi"}}}}},
+	})
+	if err == nil {
+		t.Fatalf("expected error")
+	}
+	var rateLimitErr *provider.RateLimitError
+	if !errors.As(err, &rateLimitErr) {
+		t.Fatalf("expected rate limit error, got %T", err)
+	}
+	if rateLimitErr.RequestID != "req-err" {
+		t.Fatalf("unexpected request id: %s", rateLimitErr.RequestID)
+	}
+	if rateLimitErr.StatusCode != http.StatusTooManyRequests {
+		t.Fatalf("unexpected status: %d", rateLimitErr.StatusCode)
+	}
+	if rateLimitErr.Message != "rate limited" {
+		t.Fatalf("unexpected message: %s", rateLimitErr.Message)
 	}
 }
