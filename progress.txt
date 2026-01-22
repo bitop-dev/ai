@@ -41,3 +41,4 @@
 2026-01-22: Added the Google Vertex provider with auth/token handling, request/stream mapping, tests, and documentation, and marked the task complete.
 2026-01-22: Added the Azure OpenAI provider with API version/deployment URL handling, tests, and documentation, and marked the task complete.
 2026-01-22: Implemented the Amazon Bedrock provider with SigV4 signing, credential chain support, streaming parsing, tests, and documentation, and marked the task complete.
+2026-01-22: Added the Mistral provider with chat/embedding request mapping, tool/JSON response format handling, streaming support, tests, and documentation, and marked the task complete.
