@@ -828,7 +828,7 @@ tasks:
       - Streaming integration tests included
 
   - title: "phase-9.md - Add example programs"
-    completed: false
+    completed: true
     parallel_group: 10
     tags: [phase-9, examples]
     file: phase-9.md
