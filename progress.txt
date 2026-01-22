@@ -2,3 +2,4 @@
 2026-01-21: Expanded `tasks/phase-0.md` with full ai-sdk-6 package mapping (including exclusions), updated documentation tests for the inventory, and marked the mapping task complete.
 2026-01-21 - Completed Phase 0 repository layout/naming writeup, added decision rationale, and added a validation test script.
 2026-01-21: Added package inventory validation to `tasks/tests/phase-0_layout_test.sh` and marked the Phase 0 mapping task complete.
+2026-01-21: Documented single-module decision and module path, added validation checks, and marked the Phase 0 module task complete.

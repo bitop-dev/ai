@@ -18,9 +18,13 @@ for heading in [
     "## Naming Conventions",
     "## Mapping from TypeScript Monorepo",
     "## Decision Rationale",
+    "## Module Layout and Module Path",
 ]:
     if heading not in phase_text:
         raise SystemExit(f"Missing heading in phase-0.md: {heading}")
+
+if "github.com/vercel/ai-sdk-go" not in phase_text:
+    raise SystemExit("Missing module path in phase-0.md")
 
 packages_dir = Path("ai-sdk-6/packages")
 if not packages_dir.exists():
@@ -45,7 +49,11 @@ for heading in [
     "## Repository Layout Rationale",
     "## Naming Conventions Rationale",
     "## Documentation Placement",
+    "## Module Layout and Module Path",
 ]:
     if heading not in decision_text:
         raise SystemExit(f"Missing heading in phase-decision-0.md: {heading}")
+
+if "github.com/vercel/ai-sdk-go" not in decision_text:
+    raise SystemExit("Missing module path in phase-decision-0.md")
 PY

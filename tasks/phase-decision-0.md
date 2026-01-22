@@ -15,6 +15,10 @@
 - Keep phase docs in `tasks/` to preserve the roadmap near implementation work.
 - Use `docs/` for public-facing guidance and migration notes to avoid mixing planning and published docs.
 
+## Module Layout and Module Path
+- Use a single Go module to avoid cross-module replace directives while the SDK is still evolving.
+- Adopt `github.com/vercel/ai-sdk-go` so package import paths remain stable and match the project name.
+- Keep public packages in `pkg/` so users can import `github.com/vercel/ai-sdk-go/pkg/...` regardless of provider.
+
 ## Open Decisions
-- Module layout (single vs multi-module) remains open until Phase 0 tasks are complete.
-- Module path naming will be finalized in the module decision task.
+- None for Phase 0.

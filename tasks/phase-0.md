@@ -124,6 +124,12 @@ Inventory validated against `ai-sdk-6/packages` directory listing on 2026-01-21.
 - Public docs live in `docs/` with API reference and migration notes.
 - Provider-specific notes live in `docs/providers/<provider>.md`.
 
+## Module Layout and Module Path
+- Decision: use a single Go module for the entire repository.
+- Module path: `github.com/vercel/ai-sdk-go`.
+- Public packages remain under `pkg/` so the import paths are consistent across core, providers, and adapters.
+- Internal helpers stay in `internal/` to keep provider implementations sharing code without exposing it to consumers.
+
 ## Testing and Examples Layout
 - Unit tests: alongside code in `pkg/**` and `internal/**`.
 - Integration tests: grouped by provider and guarded by env vars.
@@ -141,6 +147,4 @@ Inventory validated against `ai-sdk-6/packages` directory listing on 2026-01-21.
 - None.
 
 ## Open Decisions
-- Single module vs multi-module layout for providers.
-- Module path naming (recommended default: `ai-sdk-go`).
 - Whether to include a CLI in `cmd/` or keep the repo library-only.

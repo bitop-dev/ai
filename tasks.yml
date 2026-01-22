@@ -29,7 +29,7 @@ tasks:
       - decision rationale in tasks directory documented in phase-decision-0.md doc
 
   - title: "phase-0.md - Decide module layout and module path"
-    completed: false
+    completed: true
     parallel_group: 1
     tags: [phase-0, module]
     file: phase-0.md
