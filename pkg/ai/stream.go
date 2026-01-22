@@ -2,17 +2,21 @@ package ai
 
 import (
 	"context"
+	"sync"
 	"sync/atomic"
 )
 
 // Stream provides an iterator-style wrapper over a channel.
 type Stream[T any] struct {
-	ctx    context.Context
-	cancel context.CancelFunc
-	ch     <-chan T
-	value  T
-	err    error
-	closed atomic.Bool
+	ctx        context.Context
+	cancel     context.CancelFunc
+	ch         <-chan T
+	value      T
+	err        error
+	closed     atomic.Bool
+	onValue    func(T)
+	onComplete func(error)
+	complete   sync.Once
 }
 
 func newStream[T any](ctx context.Context, cancel context.CancelFunc, ch <-chan T) *Stream[T] {
@@ -42,13 +46,18 @@ func (s *Stream[T]) Next() bool {
 			s.err = s.ctx.Err()
 		}
 		s.closed.Store(true)
+		s.completeOnce(s.err)
 		return false
 	case value, ok := <-s.ch:
 		if !ok {
 			s.closed.Store(true)
+			s.completeOnce(s.err)
 			return false
 		}
 		s.value = value
+		if s.onValue != nil {
+			s.onValue(value)
+		}
 		return true
 	}
 }
@@ -69,4 +78,13 @@ func (s *Stream[T]) Close() {
 	if s.cancel != nil {
 		s.cancel()
 	}
+	s.completeOnce(s.err)
+}
+
+func (s *Stream[T]) completeOnce(err error) {
+	s.complete.Do(func() {
+		if s.onComplete != nil {
+			s.onComplete(err)
+		}
+	})
 }

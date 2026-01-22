@@ -299,7 +299,7 @@ tasks:
       - Stream cancellation honors context
 
   - title: "phase-5.md - Integrate telemetry hooks"
-    completed: false
+    completed: true
     parallel_group: 6
     tags: [phase-5, telemetry]
     file: phase-5.md

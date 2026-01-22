@@ -27,3 +27,4 @@
 2026-01-22: Implemented structured output parsing for GenerateObject/StreamObject with schema validation hooks, added JSON extraction fallback, and added tests.
 2026-01-22: Added provider registry with model ID parsing, middleware support, and ResolveModel helper, plus registry tests and documentation updates.
 2026-01-22: Added ai stream HTTP helpers with SSE serialization and cancellation handling, added tests for streaming response output/cancel behavior, and marked the Phase 5 stream helper task complete.
+2026-01-22: Added core telemetry interfaces with stream hooks, wired telemetry into text/object APIs, added telemetry tests, and marked the Phase 5 telemetry task complete.

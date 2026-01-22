@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"strings"
+	"time"
 
 	"github.com/vercel/ai-sdk-go/pkg/provider"
 	"github.com/vercel/ai-sdk-go/pkg/providerutils"
@@ -26,6 +27,7 @@ type TextOptions struct {
 	IncludeRawChunks *bool
 	RequestOptions   provider.RequestOptions
 	SchemaValidator  providerutils.SchemaValidator
+	Telemetry        Telemetry
 }
 
 type GenerateTextOptions = TextOptions
@@ -76,7 +78,7 @@ func GenerateText(ctx context.Context, model provider.LanguageModelV3, options G
 		return GenerateTextResult{}, ErrNilModel
 	}
 
-	streamResult, err := StreamText(ctx, model, StreamTextOptions(options))
+	streamResult, err := streamText(ctx, model, StreamTextOptions(options), TelemetryOperationGenerateText)
 	if err != nil {
 		return GenerateTextResult{}, err
 	}
@@ -102,19 +104,37 @@ func GenerateText(ctx context.Context, model provider.LanguageModelV3, options G
 }
 
 func StreamText(ctx context.Context, model provider.LanguageModelV3, options StreamTextOptions) (StreamTextResult, error) {
+	return streamText(ctx, model, options, TelemetryOperationStreamText)
+}
+
+func streamText(ctx context.Context, model provider.LanguageModelV3, options StreamTextOptions, operation string) (StreamTextResult, error) {
 	if model == nil {
 		return StreamTextResult{}, ErrNilModel
 	}
 	ctx, cancel := context.WithCancel(ctx)
+	telemetry := options.Telemetry
+	if telemetry == nil {
+		telemetry = NoopTelemetry{}
+	}
+	span := telemetry.Start(ctx, TelemetryRequest{
+		Operation: operation,
+		Provider:  model.ProviderID(),
+		Model:     model.ModelID(),
+		Metadata:  options.RequestOptions.Metadata,
+	})
+	startTime := time.Now()
 	callOptions := toLanguageModelCallOptions(options)
 	streamResult, err := model.DoStream(ctx, callOptions)
 	if err != nil {
 		cancel()
+		span.Error(ctx, TelemetrySpanError{Duration: time.Since(startTime), Err: err})
 		return StreamTextResult{}, err
 	}
+	stream := newStream(ctx, cancel, streamResult.Stream)
+	attachTelemetry(stream, span, startTime)
 
 	return StreamTextResult{
-		Stream:   newStream(ctx, cancel, streamResult.Stream),
+		Stream:   stream,
 		Request:  streamResult.Request,
 		Response: streamResult.Response,
 	}, nil
@@ -122,7 +142,7 @@ func StreamText(ctx context.Context, model provider.LanguageModelV3, options Str
 
 func GenerateObject(ctx context.Context, model provider.LanguageModelV3, options GenerateObjectOptions) (GenerateObjectResult, error) {
 	options.ResponseFormat = jsonResponseFormat(options.ResponseFormat)
-	streamResult, err := StreamText(ctx, model, StreamTextOptions(options))
+	streamResult, err := streamText(ctx, model, StreamTextOptions(options), TelemetryOperationGenerateObject)
 	if err != nil {
 		return GenerateObjectResult{}, err
 	}
@@ -154,7 +174,7 @@ func GenerateObject(ctx context.Context, model provider.LanguageModelV3, options
 
 func StreamObject(ctx context.Context, model provider.LanguageModelV3, options StreamObjectOptions) (StreamObjectResult, error) {
 	options.ResponseFormat = jsonResponseFormat(options.ResponseFormat)
-	streamResult, err := StreamText(ctx, model, StreamTextOptions(options))
+	streamResult, err := streamText(ctx, model, StreamTextOptions(options), TelemetryOperationStreamObject)
 	if err != nil {
 		return StreamObjectResult{}, err
 	}
@@ -391,4 +411,69 @@ func mergeProviderMetadata(dst provider.ProviderMetadata, src provider.ProviderM
 		dst[providerID] = copied
 	}
 	return dst
+}
+
+func attachTelemetry(stream *Stream[provider.StreamPart], span TelemetrySpan, start time.Time) {
+	if stream == nil {
+		return
+	}
+	if span == nil {
+		span = NoopSpan{}
+	}
+	state := &telemetryStreamState{}
+	stream.onValue = state.record
+	stream.onComplete = func(err error) {
+		state.complete(stream.ctx, span, start, err)
+	}
+}
+
+type telemetryStreamState struct {
+	warnings         []provider.Warning
+	usage            *provider.LanguageModelUsage
+	responseMetadata *provider.ResponseMetadata
+	providerMetadata provider.ProviderMetadata
+	err              error
+}
+
+func (state *telemetryStreamState) record(part provider.StreamPart) {
+	if len(part.Warnings) > 0 {
+		state.warnings = append(state.warnings, part.Warnings...)
+	}
+	state.providerMetadata = mergeProviderMetadata(state.providerMetadata, part.ProviderMetadata)
+	if part.ResponseMetadata != nil {
+		state.responseMetadata = part.ResponseMetadata
+		state.providerMetadata = mergeProviderMetadata(state.providerMetadata, part.ResponseMetadata.ProviderMetadata)
+	}
+
+	switch part.Type {
+	case provider.StreamPartTypeFinish:
+		if part.Finish != nil {
+			state.usage = part.Finish.Usage
+		}
+	case provider.StreamPartTypeError:
+		if part.Error != nil && part.Error.Err != nil {
+			state.err = part.Error.Err
+		}
+	}
+}
+
+func (state *telemetryStreamState) complete(ctx context.Context, span TelemetrySpan, start time.Time, streamErr error) {
+	if span == nil {
+		return
+	}
+	err := state.err
+	if err == nil {
+		err = streamErr
+	}
+	if err != nil {
+		span.Error(ctx, TelemetrySpanError{Duration: time.Since(start), Err: err, Warnings: state.warnings})
+		return
+	}
+	span.End(ctx, TelemetrySpanEnd{
+		Duration:         time.Since(start),
+		Usage:            state.usage,
+		Warnings:         state.warnings,
+		ResponseMetadata: state.responseMetadata,
+		ProviderMetadata: state.providerMetadata,
+	})
 }
