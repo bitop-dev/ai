@@ -45,6 +45,7 @@ const (
 	ToolOutputTypeJSON    ToolOutputType = "json"
 	ToolOutputTypeError   ToolOutputType = "error"
 	ToolOutputTypeContent ToolOutputType = "content"
+	ToolOutputTypeResult  ToolOutputType = "result"
 )
 
 type ToolOutput interface {
@@ -74,6 +75,13 @@ type ToolContentOutput struct {
 }
 
 func (ToolContentOutput) OutputType() ToolOutputType { return ToolOutputTypeContent }
+
+type ToolResultOutput struct {
+	Result  any
+	IsError bool
+}
+
+func (ToolResultOutput) OutputType() ToolOutputType { return ToolOutputTypeResult }
 
 func ExecuteTool(ctx context.Context, tool ToolDefinition, call ToolCall) (ToolResult, error) {
 	if tool.Execute == nil {
@@ -113,6 +121,12 @@ func ToolResultFromOutput(call ToolCall, output ToolOutput) ToolResult {
 	case *ToolErrorOutput:
 		result.Result = typed.Err
 		result.IsError = true
+	case ToolResultOutput:
+		result.Result = typed.Result
+		result.IsError = typed.IsError
+	case *ToolResultOutput:
+		result.Result = typed.Result
+		result.IsError = typed.IsError
 	default:
 		result.Result = output
 	}

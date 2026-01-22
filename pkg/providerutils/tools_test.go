@@ -22,6 +22,7 @@ func TestToolResultFromOutput(t *testing.T) {
 		{name: "json", output: ToolJSONOutput{Data: provider.JSONObject{"ok": true}}, wantValue: provider.JSONObject{"ok": true}},
 		{name: "content", output: ToolContentOutput{Content: []provider.ContentPart{provider.TextContent{Text: "hello"}}}, wantValue: []provider.ContentPart{provider.TextContent{Text: "hello"}}},
 		{name: "error", output: ToolErrorOutput{Err: errors.New("boom")}, wantError: true, wantValue: "boom"},
+		{name: "result", output: ToolResultOutput{Result: map[string]any{"ok": true}, IsError: true}, wantError: true, wantValue: map[string]any{"ok": true}},
 	}
 
 	for _, entry := range cases {
@@ -36,12 +37,14 @@ func TestToolResultFromOutput(t *testing.T) {
 			}
 
 			if entry.wantError {
-				errValue, ok := result.Result.(error)
-				if !ok {
-					t.Fatalf("expected error result, got %T", result.Result)
+				if errValue, ok := result.Result.(error); ok {
+					if errValue.Error() != entry.wantValue {
+						t.Fatalf("error message mismatch: got %q want %q", errValue.Error(), entry.wantValue)
+					}
+					return
 				}
-				if errValue.Error() != entry.wantValue {
-					t.Fatalf("error message mismatch: got %q want %q", errValue.Error(), entry.wantValue)
+				if !reflect.DeepEqual(result.Result, entry.wantValue) {
+					t.Fatalf("error result mismatch: got %#v want %#v", result.Result, entry.wantValue)
 				}
 				return
 			}
