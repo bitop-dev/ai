@@ -163,7 +163,7 @@ tasks:
       - Strict vs lenient schema helpers documented
 
   - title: "phase-3.md - Implement JSON parsing helpers"
-    completed: false
+    completed: true
     parallel_group: 4
     tags: [phase-3, json]
     file: phase-3.md

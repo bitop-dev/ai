@@ -14,3 +14,4 @@
 2026-01-22: Added provider JSON value/schema types plus request/tool/response option structs with tests, and marked the Phase 2 JSON types task complete.
 2026-01-22: Implemented providerutils tool helpers (definitions, outputs, name mapping, stream part helpers, argument accumulator) with tests, and marked the Phase 3 tool task complete.
 2026-01-22: Added providerutils schema helpers (schema wrapper, validation interface, strict/lenient helpers) with tests, and marked the Phase 3 schema task complete.
+2026-01-22: Implemented providerutils JSON parsing helpers with validation-aware errors, added JSON conversion utilities and tests, and marked the Phase 3 JSON parsing task complete.
