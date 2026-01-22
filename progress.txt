@@ -75,3 +75,4 @@
 2026-01-22: Implemented MCP stdio transport with line-delimited JSON framing, added unit tests for start/send/read/close flows, and marked the Phase 10 stdio task complete.
 2026-01-22: Implemented MCP HTTP transport with POST/SSE handling, added HTTP transport tests, ran the Go test suite, and marked the Phase 10 HTTP transport task complete.
 2026-01-22: Added MCP tool bridging helpers with tool name mapping and stream part adapters, added tool bridge tests, and marked the Phase 10 tool bridging task complete.
+2026-01-22: Added MCP stdio/HTTP examples and MCP provider docs, wrote example/doc validation tests, and marked the Phase 10 MCP examples task complete.

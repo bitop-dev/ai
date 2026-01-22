@@ -891,7 +891,7 @@ tasks:
       - Tool name mapping reversible
 
   - title: "phase-10.md - Add MCP examples and docs"
-    completed: false
+    completed: true
     parallel_group: 11
     tags: [phase-10, mcp, docs]
     file: phase-10.md
