@@ -709,7 +709,7 @@ tasks:
       - Tests and docs entry added
 
   - title: "phase-8.md - Implement provider: hume"
-    completed: false
+    completed: true
     parallel_group: 9
     tags: [phase-8, provider, hume]
     file: phase-8.md

@@ -60,3 +60,4 @@
 2026-01-22: Added Deepgram provider with speech/transcription request mapping, error handling, tests, and documentation, and marked the task complete.
 2026-01-22: Implemented AssemblyAI transcription provider with upload/polling flow, mapped provider options, added tests and docs, and marked the task complete.
 2026-01-22: Added ElevenLabs speech/transcription provider with request mapping, error handling, tests, and documentation, and marked the task complete.
+2026-01-22: Added the Hume speech provider with request mapping, context option support, tests, and documentation, and marked the task complete.
