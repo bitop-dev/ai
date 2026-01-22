@@ -66,3 +66,4 @@
 2026-01-22: Implemented the Rev.ai transcription provider with multipart job submission, polling, tests, and documentation, and marked the task complete.
 2026-01-22: Added the Hugging Face adapter with OpenAI-compatible defaults, tests for auth/streaming, documentation, and marked the task complete.
 2026-01-22: Added the LangChain adapter wrapper with OpenAI-compatible defaults, tool-call streaming coverage, documentation, and marked the task complete.
+2026-01-22: Added the LlamaIndex adapter wrapper with OpenAI-compatible defaults, streaming/tool-call tests, documentation, and marked the task complete.

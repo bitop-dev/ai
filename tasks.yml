@@ -784,7 +784,7 @@ tasks:
       - Tests and docs entry added
 
   - title: "phase-8.md - Implement adapter: llamaindex"
-    completed: false
+    completed: true
     parallel_group: 9
     tags: [phase-8, adapter, llamaindex]
     file: phase-8.md
