@@ -838,7 +838,7 @@ tasks:
       - Embeddings, images, speech, transcription examples added
 
   - title: "phase-9.md - Publish documentation set"
-    completed: false
+    completed: true
     parallel_group: 10
     tags: [phase-9, docs]
     file: phase-9.md
@@ -861,7 +861,7 @@ tasks:
       - MCP error mapping implemented
 
   - title: "phase-10.md - Implement MCP stdio transport"
-    completed: false
+    completed: true
     parallel_group: 11
     tags: [phase-10, mcp]
     file: phase-10.md
