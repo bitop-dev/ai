@@ -65,7 +65,7 @@ tasks:
       - decision rationale in tasks directory documented in phase-decision-1.md doc
 
   - title: "phase-1.md - Choose schema validation and dependency policy"
-    completed: false
+    completed: true
     parallel_group: 2
     tags: [phase-1, schema]
     file: phase-1.md

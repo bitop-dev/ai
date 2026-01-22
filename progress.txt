@@ -5,3 +5,4 @@
 2026-01-21: Documented single-module decision and module path, added validation checks, and marked the Phase 0 module task complete.
 2026-01-21: Documented Phase 1 module identity rationale, added a module identity test, and marked the task complete.
 2026-01-21: Documented Phase 1 streaming API shape and request options, added streaming API tests, and marked the task complete.
+2026-01-21: Documented schema validation and dependency policy decisions in Phase 1 docs, added schema validation tests, and marked the task complete.

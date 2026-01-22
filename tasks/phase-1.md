@@ -58,6 +58,7 @@
 ### Schema Validation
 - Default schema validation library: `github.com/santhosh-tekuri/jsonschema/v5`.
 - Expose a minimal validation interface so projects can replace the validator.
+- Dependency policy: stdlib-first, minimal dependencies; third-party libs allowed only for clear gaps (schema validation) and wrapped behind interfaces to keep swaps low-friction.
 
 ### Telemetry Hooks
 - Define a lightweight `Telemetry` interface for request/response timing, usage, and errors.
@@ -85,4 +86,3 @@
 
 ## Open Decisions
 - Telemetry scope (OpenTelemetry integration vs optional hooks only).
-- Whether to expose a built-in JSON schema validator or only a pluggable interface.

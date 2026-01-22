@@ -20,5 +20,10 @@
 - Treat context cancellation as the primary way to stop streams, with `Close()` delegating to cancellation for deterministic cleanup.
 - Require stream loops to select on `ctx.Done()` so HTTP requests and background goroutines terminate promptly.
 
+## Schema Validation and Dependency Policy Rationale
+- Use `github.com/santhosh-tekuri/jsonschema/v5` for JSON Schema compatibility without adding a heavy dependency graph.
+- Keep schema validation behind a small interface so teams can swap validators (or disable validation) without API churn.
+- Prefer stdlib-first, minimal dependencies to reduce downstream maintenance and keep provider packages lightweight.
+
 ## Open Decisions
 - None for module identity and versioning.
