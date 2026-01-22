@@ -45,3 +45,4 @@
 2026-01-22: Implemented the Cohere provider with chat/embedding request mapping, streaming support, docs, tests, and recorded reranking deferral.
 2026-01-22: Added the Groq provider wrapper with default OpenAI-compatible settings, rate limit/error mapping coverage, tests, and documentation.
 2026-01-22: Added TogetherAI provider wrapper with model prefix mapping, tests for auth/payload mapping, and provider documentation.
+2026-01-22: Added the xAI provider wrapper with reasoning stream handling, usage metadata mapping, tests, and documentation.

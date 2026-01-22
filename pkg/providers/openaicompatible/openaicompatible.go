@@ -213,9 +213,9 @@ func (m *languageModel) DoStream(ctx context.Context, options provider.LanguageM
 				case modeResponses:
 					return handleResponsesEvent(stream, state, event.Data, responseMetadata)
 				case modeCompletions:
-					return handleChatEvent(stream, state, event.Data, responseMetadata, true)
+					return handleChatEvent(stream, state, event.Data, responseMetadata, m.provider.providerID, true)
 				default:
-					return handleChatEvent(stream, state, event.Data, responseMetadata, false)
+					return handleChatEvent(stream, state, event.Data, responseMetadata, m.provider.providerID, false)
 				}
 			},
 		})
@@ -545,6 +545,7 @@ func responseFormatPayload(format provider.ResponseFormat) any {
 
 type streamState struct {
 	textStarted     bool
+	reasoningActive bool
 	includeRaw      bool
 	toolAccumulator *providerutils.ToolArgumentAccumulator
 	toolCalls       map[string]struct{}
@@ -563,6 +564,7 @@ type openAICompatibleChatChoice struct {
 
 type openAICompatibleChatDelta struct {
 	Content   string                      `json:"content"`
+	Reasoning string                      `json:"reasoning"`
 	ToolCalls []openAICompatibleToolDelta `json:"tool_calls"`
 }
 
@@ -578,9 +580,15 @@ type openAICompatibleToolRequest struct {
 }
 
 type openAICompatibleUsage struct {
-	PromptTokens     int `json:"prompt_tokens"`
-	CompletionTokens int `json:"completion_tokens"`
-	TotalTokens      int `json:"total_tokens"`
+	PromptTokens            int                           `json:"prompt_tokens"`
+	CompletionTokens        int                           `json:"completion_tokens"`
+	TotalTokens             int                           `json:"total_tokens"`
+	CompletionTokensDetails *openAICompatibleTokenDetails `json:"completion_tokens_details"`
+	PromptTokensDetails     *openAICompatibleTokenDetails `json:"prompt_tokens_details"`
+}
+
+type openAICompatibleTokenDetails struct {
+	ReasoningTokens int `json:"reasoning_tokens"`
 }
 
 type openAICompatibleResponsesChunk struct {
@@ -603,7 +611,7 @@ type openAICompatibleIncomplete struct {
 	Reason string `json:"reason"`
 }
 
-func handleChatEvent(stream chan<- provider.StreamPart, state *streamState, data string, metadata *provider.ResponseMetadata, isCompletion bool) error {
+func handleChatEvent(stream chan<- provider.StreamPart, state *streamState, data string, metadata *provider.ResponseMetadata, providerID provider.ProviderID, isCompletion bool) error {
 	var chunk openAICompatibleChatChunk
 	if err := json.Unmarshal([]byte(data), &chunk); err != nil {
 		return err
@@ -616,6 +624,9 @@ func handleChatEvent(stream chan<- provider.StreamPart, state *streamState, data
 	if isCompletion && choice.Text != "" {
 		text = choice.Text
 	}
+	if choice.Delta.Reasoning != "" {
+		emitReasoning(stream, state, choice.Delta.Reasoning)
+	}
 	if text != "" {
 		emitText(stream, state, text)
 	}
@@ -627,8 +638,10 @@ func handleChatEvent(stream chan<- provider.StreamPart, state *streamState, data
 	if choice.FinishReason != "" {
 		usage := usageFromChatChunk(chunk.Usage)
 		finish := provider.Finish{Reason: mapFinishReason(choice.FinishReason), Usage: usage}
+		providerMetadata := usageMetadataFromChatChunk(chunk.Usage, providerID)
 		finalizeTools(stream, state)
-		stream <- provider.StreamPart{Type: provider.StreamPartTypeFinish, Finish: &finish, ResponseMetadata: metadata}
+		finalizeReasoning(stream, state)
+		stream <- provider.StreamPart{Type: provider.StreamPartTypeFinish, Finish: &finish, ResponseMetadata: metadata, ProviderMetadata: providerMetadata}
 	}
 	return nil
 }
@@ -667,6 +680,15 @@ func emitText(stream chan<- provider.StreamPart, state *streamState, text string
 	stream <- provider.StreamPart{Type: provider.StreamPartTypeTextDelta, TextDelta: &provider.TextDelta{Delta: text}}
 }
 
+func emitReasoning(stream chan<- provider.StreamPart, state *streamState, text string) {
+	if !state.reasoningActive {
+		state.reasoningActive = true
+		stream <- provider.StreamPart{Type: provider.StreamPartTypeReasoningStart, ReasoningStart: &provider.ReasoningStart{Text: text}}
+		return
+	}
+	stream <- provider.StreamPart{Type: provider.StreamPartTypeReasoningDelta, ReasoningDelta: &provider.ReasoningDelta{Delta: text}}
+}
+
 func handleToolCallDelta(stream chan<- provider.StreamPart, state *streamState, deltas []openAICompatibleToolDelta) error {
 	for _, delta := range deltas {
 		if delta.ID == "" {
@@ -699,6 +721,14 @@ func finalizeTools(stream chan<- provider.StreamPart, state *streamState) {
 	}
 }
 
+func finalizeReasoning(stream chan<- provider.StreamPart, state *streamState) {
+	if !state.reasoningActive {
+		return
+	}
+	stream <- provider.StreamPart{Type: provider.StreamPartTypeReasoningEnd, ReasoningEnd: &provider.ReasoningEnd{Text: ""}}
+	state.reasoningActive = false
+}
+
 func usageFromChatChunk(usage *openAICompatibleUsage) *provider.LanguageModelUsage {
 	if usage == nil {
 		return nil
@@ -708,6 +738,20 @@ func usageFromChatChunk(usage *openAICompatibleUsage) *provider.LanguageModelUsa
 		CompletionTokens: usage.CompletionTokens,
 		TotalTokens:      usage.TotalTokens,
 	}
+}
+
+func usageMetadataFromChatChunk(usage *openAICompatibleUsage, providerID provider.ProviderID) provider.ProviderMetadata {
+	if usage == nil {
+		return nil
+	}
+	metadata := map[string]any{}
+	if usage.CompletionTokensDetails != nil && usage.CompletionTokensDetails.ReasoningTokens != 0 {
+		metadata["reasoning_tokens"] = usage.CompletionTokensDetails.ReasoningTokens
+	}
+	if len(metadata) == 0 {
+		return nil
+	}
+	return provider.ProviderMetadata{string(providerID): metadata}
 }
 
 func usageFromResponsesChunk(usage openAICompatibleResponsesUsage) *provider.LanguageModelUsage {
