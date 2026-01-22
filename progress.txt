@@ -47,3 +47,4 @@
 2026-01-22: Added TogetherAI provider wrapper with model prefix mapping, tests for auth/payload mapping, and provider documentation.
 2026-01-22: Added the xAI provider wrapper with reasoning stream handling, usage metadata mapping, tests, and documentation.
 2026-01-22: Added the DeepSeek provider wrapper with reasoning/tool call stream mapping, tests, and documentation.
+2026-01-22: Added the Perplexity provider with citation stream mapping, usage metadata, tests, and documentation.
