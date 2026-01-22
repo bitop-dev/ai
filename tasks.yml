@@ -100,7 +100,7 @@ tasks:
       - Interfaces documented for provider authors
 
   - title: "phase-2.md - Define prompt, message, and tool types"
-    completed: false
+    completed: true
     parallel_group: 3
     tags: [phase-2, types]
     file: phase-2.md
