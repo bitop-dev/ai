@@ -38,3 +38,4 @@
 2026-01-22: Implemented the OpenAI-compatible provider with request overrides, streaming support, error mapping, plus tests and documentation.
 2026-01-22: Added the Vercel provider wrapper with default v0 API settings, tests for env-based auth and unsupported models, and provider documentation.
 2026-01-22: Implemented the Google Generative AI provider with language model streaming, embeddings, tests, and documentation, and marked the task complete.
+2026-01-22: Added the Google Vertex provider with auth/token handling, request/stream mapping, tests, and documentation, and marked the task complete.
