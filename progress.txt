@@ -73,3 +73,4 @@
 2026-01-22: Added example programs for text, streaming SSE, tool calling, structured output, embeddings/rerank, image, speech, and transcription flows with a validation test, and marked the Phase 9 examples task complete.
 2026-01-22: Added MCP client core JSON-RPC types, initialize/tools list/call flow, error mapping helpers, tests with a mock transport, and marked the Phase 10 MCP client task complete.
 2026-01-22: Implemented MCP stdio transport with line-delimited JSON framing, added unit tests for start/send/read/close flows, and marked the Phase 10 stdio task complete.
+2026-01-22: Implemented MCP HTTP transport with POST/SSE handling, added HTTP transport tests, ran the Go test suite, and marked the Phase 10 HTTP transport task complete.

@@ -871,7 +871,7 @@ tasks:
       - Unit tests cover stdio framing
 
   - title: "phase-10.md - Implement MCP HTTP transport"
-    completed: false
+    completed: true
     parallel_group: 11
     tags: [phase-10, mcp]
     file: phase-10.md
