@@ -438,7 +438,7 @@ tasks:
       - Tests and docs entry added
 
   - title: "phase-8.md - Implement provider: azure"
-    completed: false
+    completed: true
     parallel_group: 9
     tags: [phase-8, provider, azure]
     file: phase-8.md
