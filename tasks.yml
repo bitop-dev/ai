@@ -249,7 +249,7 @@ tasks:
   # PARALLEL GROUP 6: Phase 5 - ai core package
   # ===========================================================================
   - title: "phase-5.md - Implement core Generate/Stream APIs"
-    completed: false
+    completed: true
     parallel_group: 6
     tags: [phase-5, ai]
     file: phase-5.md
