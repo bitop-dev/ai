@@ -5,9 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"net/http/httptest"
 	"testing"
 
+	"github.com/vercel/ai-sdk-go/internal/testserver"
 	"github.com/vercel/ai-sdk-go/pkg/provider"
 )
 
@@ -23,17 +23,7 @@ func TestCreateHuggingFaceDefaults(t *testing.T) {
 
 func TestHuggingFaceLanguageModelUsesEnvKey(t *testing.T) {
 	t.Setenv("HUGGINGFACE_API_KEY", "test-key")
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/chat/completions" {
-			t.Fatalf("unexpected path: %s", r.URL.Path)
-		}
-		if r.Header.Get("Authorization") != "Bearer test-key" {
-			t.Fatalf("missing auth header")
-		}
-		if r.Header.Get("X-Region") != "global" {
-			t.Fatalf("missing custom header")
-		}
-
+	server := testserver.New(t, func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/event-stream")
 		flusher := w.(http.Flusher)
 		write := func(data string) {
@@ -42,7 +32,7 @@ func TestHuggingFaceLanguageModelUsesEnvKey(t *testing.T) {
 		}
 		write(`{"choices":[{"delta":{"content":"Hello"}}]}`)
 		write(`{"choices":[{"delta":{},"finish_reason":"stop"}]}`)
-	}))
+	})
 	defer server.Close()
 
 	client := CreateHuggingFace(Settings{
@@ -60,6 +50,19 @@ func TestHuggingFaceLanguageModelUsesEnvKey(t *testing.T) {
 		t.Fatalf("stream: %v", err)
 	}
 	parts := collectParts(result.Stream)
+	request, ok := server.LastRequest()
+	if !ok {
+		t.Fatalf("expected captured request")
+	}
+	if request.Path != "/chat/completions" {
+		t.Fatalf("unexpected path: %s", request.Path)
+	}
+	if request.Header.Get("Authorization") != "Bearer test-key" {
+		t.Fatalf("missing auth header")
+	}
+	if request.Header.Get("X-Region") != "global" {
+		t.Fatalf("missing custom header")
+	}
 	if len(parts) != 3 {
 		t.Fatalf("expected 3 parts, got %d", len(parts))
 	}

@@ -67,3 +67,4 @@
 2026-01-22: Added the Hugging Face adapter with OpenAI-compatible defaults, tests for auth/streaming, documentation, and marked the task complete.
 2026-01-22: Added the LangChain adapter wrapper with OpenAI-compatible defaults, tool-call streaming coverage, documentation, and marked the task complete.
 2026-01-22: Added the LlamaIndex adapter wrapper with OpenAI-compatible defaults, streaming/tool-call tests, documentation, and marked the task complete.
+2026-01-22: Added internal testserver helpers for captured requests/responses, updated Hugging Face tests to use the helper, and added test coverage for the new fixture.
