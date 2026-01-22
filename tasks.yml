@@ -130,7 +130,7 @@ tasks:
       - Provider metadata and warnings supported
 
   - title: "phase-2.md - Define JSON types and response format"
-    completed: false
+    completed: true
     parallel_group: 3
     tags: [phase-2, schema]
     file: phase-2.md
