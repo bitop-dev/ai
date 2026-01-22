@@ -563,9 +563,10 @@ type openAICompatibleChatChoice struct {
 }
 
 type openAICompatibleChatDelta struct {
-	Content   string                      `json:"content"`
-	Reasoning string                      `json:"reasoning"`
-	ToolCalls []openAICompatibleToolDelta `json:"tool_calls"`
+	Content          string                      `json:"content"`
+	Reasoning        string                      `json:"reasoning"`
+	ReasoningContent string                      `json:"reasoning_content"`
+	ToolCalls        []openAICompatibleToolDelta `json:"tool_calls"`
 }
 
 type openAICompatibleToolDelta struct {
@@ -624,8 +625,12 @@ func handleChatEvent(stream chan<- provider.StreamPart, state *streamState, data
 	if isCompletion && choice.Text != "" {
 		text = choice.Text
 	}
-	if choice.Delta.Reasoning != "" {
-		emitReasoning(stream, state, choice.Delta.Reasoning)
+	reasoning := choice.Delta.Reasoning
+	if reasoning == "" {
+		reasoning = choice.Delta.ReasoningContent
+	}
+	if reasoning != "" {
+		emitReasoning(stream, state, reasoning)
 	}
 	if text != "" {
 		emitText(stream, state, text)

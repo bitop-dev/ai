@@ -527,7 +527,7 @@ tasks:
       - Tests and docs entry added
 
   - title: "phase-8.md - Implement provider: deepseek"
-    completed: false
+    completed: true
     parallel_group: 9
     tags: [phase-8, provider, deepseek]
     file: phase-8.md
