@@ -17,7 +17,7 @@ client := lmnt.CreateLMNT(lmnt.Settings{
 
 ```go
 speechModel, _ := client.SpeechModel("aurora")
-result, _ := speechModel.DoGenerate(ctx, provider.SpeechModelV3CallOptions{
+result, _ := speechModel.DoGenerate(ctx, provider.SpeechModelCallOptions{
     Text:         "Hello from LMNT",
     Voice:        "ava",
     OutputFormat: "mp3",

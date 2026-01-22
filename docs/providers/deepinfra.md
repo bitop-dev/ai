@@ -19,7 +19,7 @@ client := deepinfra.CreateDeepInfra(deepinfra.Settings{
 
 ```go
 model, _ := client.LanguageModel("meta-llama/Llama-3.1-8B-Instruct")
-result, _ := model.DoStream(ctx, provider.LanguageModelV3CallOptions{
+result, _ := model.DoStream(ctx, provider.LanguageModelCallOptions{
     Prompt: provider.Prompt{
         Messages: []provider.ModelMessage{
             {Role: provider.RoleUser, Content: []provider.ContentPart{provider.TextContent{Text: "Hello"}}},
@@ -33,7 +33,7 @@ _ = result
 
 ```go
 embedModel, _ := client.EmbeddingModel("BAAI/bge-large-en-v1.5")
-result, _ := embedModel.DoEmbed(ctx, provider.EmbeddingModelV3CallOptions{
+result, _ := embedModel.DoEmbed(ctx, provider.EmbeddingModelCallOptions{
     Values: []string{"hello"},
 })
 _ = result
@@ -43,7 +43,7 @@ _ = result
 
 ```go
 imageModel, _ := client.ImageModel("stabilityai/sd3.5")
-result, _ := imageModel.DoGenerate(ctx, provider.ImageModelV3CallOptions{
+result, _ := imageModel.DoGenerate(ctx, provider.ImageModelCallOptions{
     Prompt:      "A futuristic cityscape",
     AspectRatio: "16:9",
     N:           1,
@@ -62,7 +62,7 @@ DeepInfra image models accept provider-specific parameters via
 `ProviderOptions["deepinfra"]`.
 
 ```go
-options := provider.ImageModelV3CallOptions{
+options := provider.ImageModelCallOptions{
     Prompt: "A neon skyline",
     ProviderOptions: provider.ProviderOptions{
         "deepinfra": provider.JSONObject{

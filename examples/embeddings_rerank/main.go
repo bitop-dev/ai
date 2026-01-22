@@ -12,12 +12,12 @@ import (
 type localReranker struct{}
 
 func (localReranker) SpecificationVersion() provider.SpecificationVersion {
-	return provider.SpecificationVersionV3
+	return provider.SpecificationVersionCurrent
 }
 func (localReranker) ProviderID() provider.ProviderID { return "local" }
 func (localReranker) ModelID() provider.ModelID       { return "demo-reranker" }
-func (localReranker) DoRerank(ctx context.Context, options provider.RerankingModelV3CallOptions) (provider.RerankingModelV3Result, error) {
-	return provider.RerankingModelV3Result{}, nil
+func (localReranker) DoRerank(ctx context.Context, options provider.RerankingModelCallOptions) (provider.RerankingModelResult, error) {
+	return provider.RerankingModelResult{}, nil
 }
 
 func main() {
@@ -28,7 +28,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	_, err = ai.Embed(ctx, model, provider.EmbeddingModelV3CallOptions{
+	_, err = ai.Embed(ctx, model, provider.EmbeddingModelCallOptions{
 		Values: []string{
 			"Go makes concurrency approachable.",
 			"The cloud skyline glowed at dusk.",
@@ -39,7 +39,7 @@ func main() {
 	}
 	log.Println("embedding request sent")
 
-	_, err = ai.Rerank(ctx, localReranker{}, provider.RerankingModelV3CallOptions{})
+	_, err = ai.Rerank(ctx, localReranker{}, provider.RerankingModelCallOptions{})
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -21,7 +21,7 @@ client := deepseek.CreateDeepSeek(deepseek.Settings{
 
 ```go
 model, _ := client.LanguageModel("deepseek-chat")
-result, _ := model.DoGenerate(ctx, provider.LanguageModelV3CallOptions{
+result, _ := model.DoGenerate(ctx, provider.LanguageModelCallOptions{
     Prompt: provider.Prompt{
         Messages: []provider.ModelMessage{
             {Role: provider.RoleUser, Content: []provider.ContentPart{provider.TextContent{Text: "Hello"}}},

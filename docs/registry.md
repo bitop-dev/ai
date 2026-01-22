@@ -6,7 +6,7 @@ identifier (for example, `openai:gpt-4o-mini`).
 ## Create a registry
 
 ```go
-providers := map[provider.ProviderID]provider.ProviderV3{
+providers := map[provider.ProviderID]provider.Provider{
     "openai": openai.CreateOpenAI(openai.Settings{}),
     "anthropic": anthropic.CreateAnthropic(anthropic.Settings{}),
 }

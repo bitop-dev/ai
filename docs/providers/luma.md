@@ -19,7 +19,7 @@ client := luma.CreateLuma(luma.Settings{
 
 ```go
 imageModel, _ := client.ImageModel("dream-machine")
-result, _ := imageModel.DoGenerate(ctx, provider.ImageModelV3CallOptions{
+result, _ := imageModel.DoGenerate(ctx, provider.ImageModelCallOptions{
     Prompt:      "A neon skyline",
     AspectRatio: "16:9",
 })
@@ -31,7 +31,7 @@ _ = result
 Luma accepts provider-specific options via `ProviderOptions["luma"]`.
 
 ```go
-options := provider.ImageModelV3CallOptions{
+options := provider.ImageModelCallOptions{
     Prompt: "Stylized portrait",
     RequestOptions: provider.RequestOptions{
         ProviderOptions: provider.ProviderOptions{

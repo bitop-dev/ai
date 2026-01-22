@@ -17,7 +17,7 @@ client := hume.CreateHume(hume.Settings{
 
 ```go
 speechModel, _ := client.SpeechModel("default")
-result, _ := speechModel.DoGenerate(ctx, provider.SpeechModelV3CallOptions{
+result, _ := speechModel.DoGenerate(ctx, provider.SpeechModelCallOptions{
     Text:         "Hello from Hume",
     OutputFormat: "mp3",
 })
@@ -27,7 +27,7 @@ _ = result
 Hume accepts provider-specific options via `ProviderOptions["hume"]`:
 
 ```go
-result, _ := speechModel.DoGenerate(ctx, provider.SpeechModelV3CallOptions{
+result, _ := speechModel.DoGenerate(ctx, provider.SpeechModelCallOptions{
     Text: "Hello",
     RequestOptions: provider.RequestOptions{
         ProviderOptions: provider.ProviderOptions{

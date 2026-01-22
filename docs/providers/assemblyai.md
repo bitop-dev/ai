@@ -17,7 +17,7 @@ client := assemblyai.CreateAssemblyAI(assemblyai.Settings{
 
 ```go
 transcriptionModel, _ := client.TranscriptionModel("best")
-result, _ := transcriptionModel.DoGenerate(ctx, provider.TranscriptionModelV3CallOptions{
+result, _ := transcriptionModel.DoGenerate(ctx, provider.TranscriptionModelCallOptions{
     Audio: audioBytes,
 })
 _ = result
@@ -30,7 +30,7 @@ including `contentSafety`, `wordBoost`, `languageCode`, `speakerLabels`,
 `summarization`, `summaryType`, `webhookUrl`, and `webhookAuthHeaderName`.
 
 ```go
-options := provider.TranscriptionModelV3CallOptions{
+options := provider.TranscriptionModelCallOptions{
     Audio: audioBytes,
     RequestOptions: provider.RequestOptions{
         ProviderOptions: provider.ProviderOptions{

@@ -19,7 +19,7 @@ client := replicate.CreateReplicate(replicate.Settings{
 
 ```go
 imageModel, _ := client.ImageModel("black-forest-labs/flux-1.1-pro")
-result, _ := imageModel.DoGenerate(ctx, provider.ImageModelV3CallOptions{
+result, _ := imageModel.DoGenerate(ctx, provider.ImageModelCallOptions{
     Prompt:      "A futuristic cityscape",
     AspectRatio: "16:9",
     N:           1,
@@ -34,7 +34,7 @@ Replicate image models accept provider-specific parameters via
 predictions. Use `maxWaitTimeInSeconds` to set a custom wait time.
 
 ```go
-options := provider.ImageModelV3CallOptions{
+options := provider.ImageModelCallOptions{
     Prompt: "A neon skyline",
     RequestOptions: provider.RequestOptions{
         ProviderOptions: provider.ProviderOptions{

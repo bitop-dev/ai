@@ -20,7 +20,7 @@ client := cohere.CreateCohere(cohere.Settings{
 
 ```go
 model, _ := client.LanguageModel("command")
-result, _ := model.DoGenerate(ctx, provider.LanguageModelV3CallOptions{
+result, _ := model.DoGenerate(ctx, provider.LanguageModelCallOptions{
     Prompt: provider.Prompt{
         Messages: []provider.ModelMessage{
             {Role: provider.RoleUser, Content: []provider.ContentPart{provider.TextContent{Text: "Hello"}}},
@@ -35,7 +35,7 @@ _ = result
 Provider options use the provider name as the key (defaults to `cohere`).
 
 ```go
-options := provider.LanguageModelV3CallOptions{
+options := provider.LanguageModelCallOptions{
     Prompt: prompt,
     ToolChoice: &provider.ToolChoice{Type: provider.ToolChoiceTypeRequired},
     ResponseFormat: &provider.ResponseFormat{
@@ -65,7 +65,7 @@ options := provider.LanguageModelV3CallOptions{
 
 ```go
 embeddingModel, _ := client.EmbeddingModel("embed-english-v3.0")
-result, _ := embeddingModel.DoEmbed(ctx, provider.EmbeddingModelV3CallOptions{
+result, _ := embeddingModel.DoEmbed(ctx, provider.EmbeddingModelCallOptions{
     Values: []string{"hello"},
     RequestOptions: provider.RequestOptions{
         ProviderOptions: provider.ProviderOptions{

@@ -4,36 +4,39 @@ The `provider` package defines shared interfaces, types, and error taxonomy for
 model providers. Provider implementations and adapters should align with these
 interfaces.
 
+Unversioned aliases (`Provider`, `LanguageModel`, etc.) map to the current
+provider specification (v3).
+
 ## Provider interfaces
 
-`ProviderV3` exposes language, embedding, and image models:
+`Provider` exposes language, embedding, and image models:
 
 ```go
-type ProviderV3 interface {
+type Provider interface {
     SpecificationVersion() SpecificationVersion
-    LanguageModel(modelID ModelID) (LanguageModelV3, error)
-    EmbeddingModel(modelID ModelID) (EmbeddingModelV3, error)
-    ImageModel(modelID ModelID) (ImageModelV3, error)
+    LanguageModel(modelID ModelID) (LanguageModel, error)
+    EmbeddingModel(modelID ModelID) (EmbeddingModel, error)
+    ImageModel(modelID ModelID) (ImageModel, error)
 }
 ```
 
 Optional capability interfaces:
 
-- `TextEmbeddingProviderV3` (legacy text embeddings)
-- `TranscriptionProviderV3`
-- `SpeechProviderV3`
-- `RerankingProviderV3`
+- `TextEmbeddingProvider` (legacy text embeddings)
+- `TranscriptionProvider`
+- `SpeechProvider`
+- `RerankingProvider`
 
 ## Model interfaces
 
 Each model interface includes IDs and call methods:
 
-- `LanguageModelV3` (`DoGenerate`, `DoStream`)
-- `EmbeddingModelV3` (`DoEmbed`)
-- `ImageModelV3` (`DoGenerate`)
-- `SpeechModelV3` (`DoGenerate`)
-- `TranscriptionModelV3` (`DoGenerate`)
-- `RerankingModelV3` (`DoRerank`)
+- `LanguageModel` (`DoGenerate`, `DoStream`)
+- `EmbeddingModel` (`DoEmbed`)
+- `ImageModel` (`DoGenerate`)
+- `SpeechModel` (`DoGenerate`)
+- `TranscriptionModel` (`DoGenerate`)
+- `RerankingModel` (`DoRerank`)
 
 ## Prompts and content
 
@@ -57,12 +60,12 @@ images, and files.
 
 ## Call options and overrides
 
-`LanguageModelV3CallOptions` contains generation parameters, response format,
+`LanguageModelCallOptions` contains generation parameters, response format,
 tool choice, and request overrides. `RequestOptions` carries headers, timeout,
 idempotency keys, and provider-specific options:
 
 ```go
-options := provider.LanguageModelV3CallOptions{
+options := provider.LanguageModelCallOptions{
     Prompt: prompt,
     RequestOptions: provider.RequestOptions{
         Headers: map[string]string{"X-Trace": "1"},

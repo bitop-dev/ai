@@ -21,7 +21,7 @@ client := fireworks.CreateFireworks(fireworks.Settings{
 
 ```go
 model, _ := client.LanguageModel("accounts/fireworks/models/firefunction-v1")
-result, _ := model.DoStream(ctx, provider.LanguageModelV3CallOptions{
+result, _ := model.DoStream(ctx, provider.LanguageModelCallOptions{
     Prompt: provider.Prompt{
         Messages: []provider.ModelMessage{
             {Role: provider.RoleUser, Content: []provider.ContentPart{provider.TextContent{Text: "Hello"}}},
@@ -35,7 +35,7 @@ _ = result
 
 ```go
 embedModel, _ := client.EmbeddingModel("nomic-ai/nomic-embed-text-v1.5")
-result, _ := embedModel.DoEmbed(ctx, provider.EmbeddingModelV3CallOptions{
+result, _ := embedModel.DoEmbed(ctx, provider.EmbeddingModelCallOptions{
     Values: []string{"hello"},
 })
 _ = result
@@ -52,7 +52,7 @@ the final stream part.
 Use provider options to pass Fireworks safety settings into requests:
 
 ```go
-options := provider.LanguageModelV3CallOptions{
+options := provider.LanguageModelCallOptions{
     Prompt: prompt,
     ProviderOptions: provider.ProviderOptions{
         "fireworks": provider.JSONObject{

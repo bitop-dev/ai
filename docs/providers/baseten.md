@@ -19,7 +19,7 @@ client := baseten.CreateBaseten(baseten.Settings{
 
 ```go
 imageModel, _ := client.ImageModel("flux-1")
-result, _ := imageModel.DoGenerate(ctx, provider.ImageModelV3CallOptions{
+result, _ := imageModel.DoGenerate(ctx, provider.ImageModelCallOptions{
     Prompt:      "A neon skyline",
     Size:        "1024x768",
     AspectRatio: "16:9",
@@ -33,7 +33,7 @@ _ = result
 Baseten image models accept extra configuration via `ProviderOptions["baseten"]`.
 
 ```go
-options := provider.ImageModelV3CallOptions{
+options := provider.ImageModelCallOptions{
     Prompt: "A luminous forest",
     RequestOptions: provider.RequestOptions{
         ProviderOptions: provider.ProviderOptions{

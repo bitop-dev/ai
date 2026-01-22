@@ -21,7 +21,7 @@ client := huggingface.CreateHuggingFace(huggingface.Settings{
 
 ```go
 model, _ := client.LanguageModel("meta-llama/Llama-3.1-8B-Instruct")
-result, _ := model.DoGenerate(ctx, provider.LanguageModelV3CallOptions{
+result, _ := model.DoGenerate(ctx, provider.LanguageModelCallOptions{
     Prompt: provider.Prompt{
         Messages: []provider.ModelMessage{
             {Role: provider.RoleUser, Content: []provider.ContentPart{provider.TextContent{Text: "Hello"}}},
@@ -36,7 +36,7 @@ _ = result
 Provider options use the provider name as the key (defaults to `huggingface`).
 
 ```go
-options := provider.LanguageModelV3CallOptions{
+options := provider.LanguageModelCallOptions{
     Prompt: prompt,
     ProviderOptions: provider.ProviderOptions{
         "huggingface": provider.JSONObject{

@@ -21,7 +21,7 @@ client := perplexity.CreatePerplexity(perplexity.Settings{
 
 ```go
 model, _ := client.LanguageModel("sonar-pro")
-result, _ := model.DoStream(ctx, provider.LanguageModelV3CallOptions{
+result, _ := model.DoStream(ctx, provider.LanguageModelCallOptions{
     Prompt: provider.Prompt{
         Messages: []provider.ModelMessage{
             {Role: provider.RoleUser, Content: []provider.ContentPart{provider.TextContent{Text: "Search"}}},

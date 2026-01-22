@@ -19,7 +19,7 @@ Deepgram voices are selected via the model ID (for example, `aura-2-helena-en`).
 
 ```go
 speechModel, _ := client.SpeechModel("aura-2-helena-en")
-result, _ := speechModel.DoGenerate(ctx, provider.SpeechModelV3CallOptions{
+result, _ := speechModel.DoGenerate(ctx, provider.SpeechModelCallOptions{
     Text:         "Hello from Deepgram",
     OutputFormat: "wav",
 })
@@ -34,7 +34,7 @@ Speech provider options can be passed via `ProviderOptions["deepgram"]`:
 
 ```go
 transcriptionModel, _ := client.TranscriptionModel("nova-3")
-result, _ := transcriptionModel.DoGenerate(ctx, provider.TranscriptionModelV3CallOptions{
+result, _ := transcriptionModel.DoGenerate(ctx, provider.TranscriptionModelCallOptions{
     Audio:     audioBytes,
     MediaType: "audio/wav",
     RequestOptions: provider.RequestOptions{

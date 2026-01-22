@@ -17,7 +17,7 @@ client := gladia.CreateGladia(gladia.Settings{
 
 ```go
 transcriptionModel, _ := client.TranscriptionModel("default")
-result, _ := transcriptionModel.DoGenerate(ctx, provider.TranscriptionModelV3CallOptions{
+result, _ := transcriptionModel.DoGenerate(ctx, provider.TranscriptionModelCallOptions{
     Audio:     audioBytes,
     MediaType: "audio/mpeg",
 })
@@ -33,7 +33,7 @@ Gladia transcription options can be passed via `ProviderOptions["gladia"]`, incl
 `structuredDataExtractionConfig`, `audioToLlmConfig`.
 
 ```go
-options := provider.TranscriptionModelV3CallOptions{
+options := provider.TranscriptionModelCallOptions{
     Audio:     audioBytes,
     MediaType: "audio/mpeg",
     RequestOptions: provider.RequestOptions{

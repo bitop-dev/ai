@@ -22,7 +22,7 @@ client := amazonbedrock.CreateAmazonBedrock(amazonbedrock.Settings{
 
 ```go
 model, _ := client.LanguageModel("amazon.titan-text-lite-v1")
-_, _ = model.DoGenerate(ctx, provider.LanguageModelV3CallOptions{
+_, _ = model.DoGenerate(ctx, provider.LanguageModelCallOptions{
     Prompt: provider.Prompt{
         Messages: []provider.ModelMessage{
             {Role: provider.RoleUser, Content: []provider.ContentPart{provider.TextContent{Text: "Hello"}}},
@@ -38,7 +38,7 @@ that require custom payloads, pass request overrides in provider options.
 ## Request Overrides
 
 ```go
-options := provider.LanguageModelV3CallOptions{
+options := provider.LanguageModelCallOptions{
     Prompt: prompt,
     ProviderOptions: provider.ProviderOptions{
         "amazon-bedrock": provider.JSONObject{
@@ -53,7 +53,7 @@ options := provider.LanguageModelV3CallOptions{
 ## Streaming
 
 ```go
-result, _ := model.DoStream(ctx, provider.LanguageModelV3CallOptions{Prompt: prompt})
+result, _ := model.DoStream(ctx, provider.LanguageModelCallOptions{Prompt: prompt})
 for part := range result.Stream {
     _ = part
 }

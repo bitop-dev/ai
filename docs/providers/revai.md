@@ -17,7 +17,7 @@ client := revai.CreateRevAI(revai.Settings{
 
 ```go
 transcriptionModel, _ := client.TranscriptionModel("machine")
-result, _ := transcriptionModel.DoGenerate(ctx, provider.TranscriptionModelV3CallOptions{
+result, _ := transcriptionModel.DoGenerate(ctx, provider.TranscriptionModelCallOptions{
     Audio:     audioBytes,
     MediaType: "audio/wav",
 })
@@ -33,7 +33,7 @@ Rev.ai transcription options can be passed via `ProviderOptions["revai"]`, inclu
 and `language`.
 
 ```go
-options := provider.TranscriptionModelV3CallOptions{
+options := provider.TranscriptionModelCallOptions{
     Audio:     audioBytes,
     MediaType: "audio/wav",
     RequestOptions: provider.RequestOptions{

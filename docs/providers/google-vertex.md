@@ -27,7 +27,7 @@ client := googlevertex.CreateGoogleVertex(googlevertex.Settings{
 
 ```go
 model, _ := client.LanguageModel("gemini-2.5-flash")
-_, _ = model.DoGenerate(ctx, provider.LanguageModelV3CallOptions{
+_, _ = model.DoGenerate(ctx, provider.LanguageModelCallOptions{
     Prompt: provider.Prompt{
         Messages: []provider.ModelMessage{
             {Role: provider.RoleUser, Content: []provider.ContentPart{provider.TextContent{Text: "Hello"}}},
@@ -39,7 +39,7 @@ _, _ = model.DoGenerate(ctx, provider.LanguageModelV3CallOptions{
 ### Tools and Structured Output
 
 ```go
-options := provider.LanguageModelV3CallOptions{
+options := provider.LanguageModelCallOptions{
     Prompt: prompt,
     ToolChoice: &provider.ToolChoice{Type: provider.ToolChoiceTypeRequired},
     ResponseFormat: &provider.ResponseFormat{
@@ -61,7 +61,7 @@ options := provider.LanguageModelV3CallOptions{
 
 ```go
 model, _ := client.EmbeddingModel("text-embedding-004")
-_, _ = model.DoEmbed(ctx, provider.EmbeddingModelV3CallOptions{
+_, _ = model.DoEmbed(ctx, provider.EmbeddingModelCallOptions{
     Values: []string{"hello", "world"},
     RequestOptions: provider.RequestOptions{ProviderOptions: provider.ProviderOptions{
         "google-vertex": provider.JSONObject{

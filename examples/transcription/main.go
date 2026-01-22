@@ -31,7 +31,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	_, err = ai.Transcribe(ctx, model, provider.TranscriptionModelV3CallOptions{
+	_, err = ai.Transcribe(ctx, model, provider.TranscriptionModelCallOptions{
 		Audio:     audio,
 		MediaType: *mediaType,
 	})

@@ -19,7 +19,7 @@ client := google.CreateGoogle(google.Settings{
 
 ```go
 model, _ := client.LanguageModel("gemini-2.5-flash")
-result, _ := model.DoGenerate(ctx, provider.LanguageModelV3CallOptions{
+result, _ := model.DoGenerate(ctx, provider.LanguageModelCallOptions{
     Prompt: provider.Prompt{
         Messages: []provider.ModelMessage{
             {Role: provider.RoleUser, Content: []provider.ContentPart{provider.TextContent{Text: "Hello"}}},
@@ -32,7 +32,7 @@ _ = result
 ### Tools and Structured Output
 
 ```go
-options := provider.LanguageModelV3CallOptions{
+options := provider.LanguageModelCallOptions{
     Prompt: prompt,
     ToolChoice: &provider.ToolChoice{Type: provider.ToolChoiceTypeRequired},
     ResponseFormat: &provider.ResponseFormat{
@@ -54,7 +54,7 @@ options := provider.LanguageModelV3CallOptions{
 
 ```go
 model, _ := client.EmbeddingModel("gemini-embedding-001")
-_, _ = model.DoEmbed(ctx, provider.EmbeddingModelV3CallOptions{
+_, _ = model.DoEmbed(ctx, provider.EmbeddingModelCallOptions{
     Values: []string{"hello", "world"},
     RequestOptions: provider.RequestOptions{ProviderOptions: provider.ProviderOptions{
         "google": provider.JSONObject{

@@ -18,7 +18,7 @@ client := llamaindex.CreateLlamaIndex(llamaindex.Settings{
 
 ```go
 model, _ := client.LanguageModel("llamaindex-chat")
-result, _ := model.DoGenerate(ctx, provider.LanguageModelV3CallOptions{
+result, _ := model.DoGenerate(ctx, provider.LanguageModelCallOptions{
     Prompt: provider.Prompt{
         Messages: []provider.ModelMessage{
             {Role: provider.RoleUser, Content: []provider.ContentPart{provider.TextContent{Text: "Hello"}}},
@@ -33,7 +33,7 @@ _ = result
 Tool calls stream through OpenAI-compatible deltas and emit `tool-call` parts.
 
 ```go
-options := provider.LanguageModelV3CallOptions{
+options := provider.LanguageModelCallOptions{
     Prompt: provider.Prompt{Messages: []provider.ModelMessage{{Role: provider.RoleUser, Content: []provider.ContentPart{provider.TextContent{Text: "Use a tool"}}}}},
     ToolChoice: &provider.ToolChoice{Type: provider.ToolChoiceTypeRequired},
 }

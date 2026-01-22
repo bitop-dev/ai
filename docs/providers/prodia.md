@@ -19,7 +19,7 @@ client := prodia.CreateProdia(prodia.Settings{
 
 ```go
 imageModel, _ := client.ImageModel("inference.flux-fast.schnell.txt2img.v2")
-result, _ := imageModel.DoGenerate(ctx, provider.ImageModelV3CallOptions{
+result, _ := imageModel.DoGenerate(ctx, provider.ImageModelCallOptions{
     Prompt: "A neon skyline",
     Seed:   123,
     Size:   "1024x1024",
@@ -32,7 +32,7 @@ _ = result
 Prodia accepts extra configuration via `ProviderOptions["prodia"]`.
 
 ```go
-options := provider.ImageModelV3CallOptions{
+options := provider.ImageModelCallOptions{
     Prompt: "A luminous forest",
     RequestOptions: provider.RequestOptions{
         ProviderOptions: provider.ProviderOptions{

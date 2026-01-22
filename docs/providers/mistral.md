@@ -20,7 +20,7 @@ client := mistral.CreateMistral(mistral.Settings{
 
 ```go
 model, _ := client.LanguageModel("mistral-large-latest")
-result, _ := model.DoGenerate(ctx, provider.LanguageModelV3CallOptions{
+result, _ := model.DoGenerate(ctx, provider.LanguageModelCallOptions{
     Prompt: provider.Prompt{
         Messages: []provider.ModelMessage{
             {Role: provider.RoleUser, Content: []provider.ContentPart{provider.TextContent{Text: "Hello"}}},
@@ -35,7 +35,7 @@ _ = result
 Provider options use the provider name as the key (defaults to `mistral`).
 
 ```go
-options := provider.LanguageModelV3CallOptions{
+options := provider.LanguageModelCallOptions{
     Prompt: prompt,
     ToolChoice: &provider.ToolChoice{Type: provider.ToolChoiceTypeRequired},
     ResponseFormat: &provider.ResponseFormat{
@@ -63,7 +63,7 @@ options := provider.LanguageModelV3CallOptions{
 
 ```go
 embeddingModel, _ := client.EmbeddingModel("mistral-embed")
-result, _ := embeddingModel.DoEmbed(ctx, provider.EmbeddingModelV3CallOptions{
+result, _ := embeddingModel.DoEmbed(ctx, provider.EmbeddingModelCallOptions{
     Values: []string{"hello"},
 })
 _ = result

@@ -17,7 +17,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	_, err = ai.GenerateSpeech(ctx, model, provider.SpeechModelV3CallOptions{
+	_, err = ai.GenerateSpeech(ctx, model, provider.SpeechModelCallOptions{
 		Text:         "Hello! This is a quick text-to-speech demo.",
 		Voice:        "alloy",
 		OutputFormat: "mp3",

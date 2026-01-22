@@ -12,7 +12,7 @@ import (
 
 func main() {
 	ctx := context.Background()
-	providers := map[provider.ProviderID]provider.ProviderV3{
+	providers := map[provider.ProviderID]provider.Provider{
 		"openai": openai.CreateOpenAI(openai.Settings{}),
 	}
 

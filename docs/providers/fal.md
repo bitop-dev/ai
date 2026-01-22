@@ -20,7 +20,7 @@ client := fal.CreateFal(fal.Settings{
 
 ```go
 imageModel, _ := client.ImageModel("fal-ai/flux")
-result, _ := imageModel.DoGenerate(ctx, provider.ImageModelV3CallOptions{
+result, _ := imageModel.DoGenerate(ctx, provider.ImageModelCallOptions{
     Prompt: "A neon skyline",
     Size:   "1024x768",
     N:      1,
@@ -35,7 +35,7 @@ Fal image models accept provider-specific parameters via
 model-specific options.
 
 ```go
-options := provider.ImageModelV3CallOptions{
+options := provider.ImageModelCallOptions{
     Prompt: "An in-painted scene",
     RequestOptions: provider.RequestOptions{
         ProviderOptions: provider.ProviderOptions{
@@ -56,7 +56,7 @@ options := provider.ImageModelV3CallOptions{
 
 ```go
 speechModel, _ := client.SpeechModel("fal-ai/chatterbox")
-result, _ := speechModel.DoGenerate(ctx, provider.SpeechModelV3CallOptions{
+result, _ := speechModel.DoGenerate(ctx, provider.SpeechModelCallOptions{
     Text:         "Hello from fal",
     Voice:        "samantha",
     OutputFormat: "url",
@@ -71,7 +71,7 @@ until completion.
 
 ```go
 transcriptionModel, _ := client.TranscriptionModel("wizper")
-result, _ := transcriptionModel.DoGenerate(ctx, provider.TranscriptionModelV3CallOptions{
+result, _ := transcriptionModel.DoGenerate(ctx, provider.TranscriptionModelCallOptions{
     Audio:     audioBytes,
     MediaType: "audio/wav",
 })

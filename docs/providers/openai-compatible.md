@@ -23,7 +23,7 @@ client := openaicompatible.CreateOpenAICompatible(openaicompatible.Settings{
 
 ```go
 model, _ := client.LanguageModel("model-id")
-result, _ := model.DoGenerate(ctx, provider.LanguageModelV3CallOptions{
+result, _ := model.DoGenerate(ctx, provider.LanguageModelCallOptions{
     Prompt: provider.Prompt{
         Messages: []provider.ModelMessage{
             {Role: provider.RoleUser, Content: []provider.ContentPart{provider.TextContent{Text: "Hello"}}},
@@ -38,7 +38,7 @@ _ = result
 Provider options use the provider name as the key (defaults to `openai-compatible`).
 
 ```go
-options := provider.LanguageModelV3CallOptions{
+options := provider.LanguageModelCallOptions{
     Prompt: prompt,
     ToolChoice: &provider.ToolChoice{Type: provider.ToolChoiceTypeRequired},
     ResponseFormat: &provider.ResponseFormat{

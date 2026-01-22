@@ -7,7 +7,7 @@ API surface; migration guides from the TypeScript SDK are not included.
 
 | Area | Status | Notes |
 | --- | --- | --- |
-| Text generation | Implemented | `GenerateText`, `StreamText` over `LanguageModelV3`. |
+| Text generation | Implemented | `GenerateText`, `StreamText` over `LanguageModel`. |
 | Structured output | Implemented | `GenerateObject` + `StreamObject`, parsing on collect. |
 | Tool loop | Implemented | Tool approvals and max-step limit. |
 | Streaming helpers | Implemented | `Stream` iterator and `PipeStream` SSE helper. |

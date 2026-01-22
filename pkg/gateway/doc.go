@@ -4,7 +4,7 @@
 //
 //	provider := gateway.CreateGateway()
 //	model, _ := provider.LanguageModel("openai/gpt-4o")
-//	result, _ := model.DoStream(ctx, provider.LanguageModelV3CallOptions{
+//	result, _ := model.DoStream(ctx, provider.LanguageModelCallOptions{
 //		Prompt: provider.Prompt{Messages: []provider.ModelMessage{{
 //			Role:    provider.RoleUser,
 //			Content: []provider.ContentPart{provider.TextContent{Text: "Hello"}},

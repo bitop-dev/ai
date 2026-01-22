@@ -20,7 +20,7 @@ Voices are selected via the `Voice` option and default to the ElevenLabs public 
 
 ```go
 speechModel, _ := client.SpeechModel("eleven_multilingual_v2")
-result, _ := speechModel.DoGenerate(ctx, provider.SpeechModelV3CallOptions{
+result, _ := speechModel.DoGenerate(ctx, provider.SpeechModelCallOptions{
     Text:         "Hello from ElevenLabs",
     Voice:        "21m00Tcm4TlvDq8ikWAM",
     OutputFormat: "mp3",
@@ -37,7 +37,7 @@ Speech provider options can be passed via `ProviderOptions["elevenlabs"]`:
 
 ```go
 transcriptionModel, _ := client.TranscriptionModel("scribe_v1")
-result, _ := transcriptionModel.DoGenerate(ctx, provider.TranscriptionModelV3CallOptions{
+result, _ := transcriptionModel.DoGenerate(ctx, provider.TranscriptionModelCallOptions{
     Audio:     audioBytes,
     MediaType: "audio/wav",
 })

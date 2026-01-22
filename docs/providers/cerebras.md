@@ -21,7 +21,7 @@ client := cerebras.CreateCerebras(cerebras.Settings{
 
 ```go
 model, _ := client.LanguageModel("llama-3.3-70b")
-result, _ := model.DoGenerate(ctx, provider.LanguageModelV3CallOptions{
+result, _ := model.DoGenerate(ctx, provider.LanguageModelCallOptions{
     Prompt: provider.Prompt{
         Messages: []provider.ModelMessage{
             {Role: provider.RoleUser, Content: []provider.ContentPart{provider.TextContent{Text: "Hello"}}},

@@ -17,7 +17,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	_, err = ai.GenerateImage(ctx, model, provider.ImageModelV3CallOptions{
+	_, err = ai.GenerateImage(ctx, model, provider.ImageModelCallOptions{
 		Prompt:      "A watercolor illustration of a fox reading a book.",
 		Size:        "1024x1024",
 		AspectRatio: "1:1",

@@ -20,7 +20,7 @@ client := openai.CreateOpenAI(openai.Settings{
 
 ```go
 model, _ := client.LanguageModel("gpt-4o")
-result, _ := model.DoGenerate(ctx, provider.LanguageModelV3CallOptions{
+result, _ := model.DoGenerate(ctx, provider.LanguageModelCallOptions{
     Prompt: provider.Prompt{
         Messages: []provider.ModelMessage{
             {Role: provider.RoleUser, Content: []provider.ContentPart{provider.TextContent{Text: "Hello"}}},
@@ -36,7 +36,7 @@ Use provider options to select the API mode:
 - `mode: "completions"` for legacy text completions
 
 ```go
-options := provider.LanguageModelV3CallOptions{
+options := provider.LanguageModelCallOptions{
     Prompt: prompt,
     ProviderOptions: provider.ProviderOptions{
         "openai": provider.JSONObject{
@@ -49,7 +49,7 @@ options := provider.LanguageModelV3CallOptions{
 ## Tools and Structured Output
 
 ```go
-options := provider.LanguageModelV3CallOptions{
+options := provider.LanguageModelCallOptions{
     Prompt: prompt,
     ToolChoice: &provider.ToolChoice{Type: provider.ToolChoiceTypeRequired},
     ResponseFormat: &provider.ResponseFormat{
