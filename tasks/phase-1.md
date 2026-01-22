@@ -62,7 +62,12 @@
 
 ### Telemetry Hooks
 - Define a lightweight `Telemetry` interface for request/response timing, usage, and errors.
-- Keep telemetry optional with no default dependencies.
+- `Telemetry` starts a request span and returns a `TelemetrySpan` for lifecycle callbacks.
+- `TelemetrySpan.End` records duration, usage counters, warnings, and response metadata.
+- `TelemetrySpan.Error` records duration plus the error payload for failed requests.
+- `Telemetry` receives operation name, provider/model identifiers, and request metadata.
+- Provide `NoopTelemetry` and `NoopSpan` helpers when telemetry is disabled.
+- OpenTelemetry: no built-in dependency; users can adapt hooks to OTel if desired.
 
 ### Compatibility and Deviations
 - Keep the same high-level API names: `GenerateText`, `StreamText`, `GenerateObject`, `StreamObject`, `Embed`, `GenerateImage`, `GenerateSpeech`, `Transcribe`, `Rerank`.

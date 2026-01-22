@@ -76,7 +76,7 @@ tasks:
       - decision rationale in tasks directory documented in phase-decision-1.md doc
 
   - title: "phase-1.md - Define telemetry hook interface"
-    completed: false
+    completed: true
     parallel_group: 2
     tags: [phase-1, telemetry]
     file: phase-1.md

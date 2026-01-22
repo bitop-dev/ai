@@ -25,5 +25,10 @@
 - Keep schema validation behind a small interface so teams can swap validators (or disable validation) without API churn.
 - Prefer stdlib-first, minimal dependencies to reduce downstream maintenance and keep provider packages lightweight.
 
+## Telemetry Hooks Rationale
+- Define `Telemetry`/`TelemetrySpan` so providers and the core API can emit timing, usage, and error metadata consistently.
+- Keep `NoopTelemetry` as the default to avoid overhead when telemetry is disabled.
+- Avoid a direct OpenTelemetry dependency so consumers can opt in with adapters that map hooks to OTel spans.
+
 ## Open Decisions
 - None for module identity and versioning.
