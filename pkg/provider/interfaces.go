@@ -105,13 +105,42 @@ type RerankingModelV3 interface {
 }
 
 // LanguageModelV3CallOptions defines provider call options for language models.
-type LanguageModelV3CallOptions struct{}
+type LanguageModelV3CallOptions struct {
+	Prompt           Prompt
+	MaxOutputTokens  int
+	Temperature      float64
+	StopSequences    []string
+	TopP             float64
+	TopK             int
+	PresencePenalty  float64
+	FrequencyPenalty float64
+	ResponseFormat   *ResponseFormat
+	Seed             int
+	ToolChoice       *ToolChoice
+	IncludeRawChunks bool
+	RequestOptions   RequestOptions
+	ProviderOptions  ProviderOptions
+}
 
 // LanguageModelV3GenerateResult captures a non-streaming language model response.
 type LanguageModelV3GenerateResult struct{}
 
 // LanguageModelV3StreamResult captures a streaming language model response.
-type LanguageModelV3StreamResult struct{}
+type LanguageModelV3StreamResult struct {
+	Stream   <-chan StreamPart
+	Request  *LanguageModelV3Request
+	Response *LanguageModelV3Response
+}
+
+// LanguageModelV3Request carries optional request metadata.
+type LanguageModelV3Request struct {
+	Body any
+}
+
+// LanguageModelV3Response carries optional response metadata.
+type LanguageModelV3Response struct {
+	Headers map[string][]string
+}
 
 // EmbeddingModelV3CallOptions defines provider call options for embedding models.
 type EmbeddingModelV3CallOptions struct{}

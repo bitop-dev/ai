@@ -63,13 +63,7 @@ func (m *GatewayLanguageModel) DoGenerate(ctx context.Context, options provider.
 }
 
 func (m *GatewayLanguageModel) DoStream(ctx context.Context, options provider.LanguageModelV3CallOptions) (provider.LanguageModelV3StreamResult, error) {
-	_ = ctx
-	_ = options
-	return provider.LanguageModelV3StreamResult{}, provider.NewUnsupportedFunctionalityError(
-		"gateway language model streaming is not implemented",
-		nil,
-		"language-model-stream",
-	)
+	return m.streamLanguageModel(ctx, options)
 }
 
 type GatewayEmbeddingModel struct {

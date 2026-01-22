@@ -19,6 +19,7 @@ const (
 	StreamPartTypeResponseMetadata StreamPartType = "response-metadata"
 	StreamPartTypeFinish           StreamPartType = "finish"
 	StreamPartTypeError            StreamPartType = "error"
+	StreamPartTypeRaw              StreamPartType = "raw"
 )
 
 type ProviderMetadata map[string]map[string]any

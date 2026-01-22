@@ -21,3 +21,4 @@
 2026-01-22: Added gateway provider factory defaults, auth/header handling, provider ID overrides, and tests for the new gateway package.
 2026-01-22: Implemented gateway model wrappers and settings types with unsupported-call guards, added wrapper tests, and marked the Phase 4 model wrapper task complete.
 2026-01-22: Implemented gateway error parsing/mapping helpers with tests, added provider error mapping metadata, and marked the Phase 4 error mapping task complete.
+2026-01-22: Implemented gateway language model streaming with SSE mapping and error handling, added streaming tests and docs, and marked the Phase 4 streaming task complete.

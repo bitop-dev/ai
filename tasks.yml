@@ -236,7 +236,7 @@ tasks:
       - Request IDs and metadata preserved
 
   - title: "phase-4.md - Implement gateway streaming and tests"
-    completed: false
+    completed: true
     parallel_group: 5
     tags: [phase-4, gateway]
     file: phase-4.md

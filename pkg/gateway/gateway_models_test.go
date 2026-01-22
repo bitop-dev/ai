@@ -38,11 +38,6 @@ func TestGatewayLanguageModelWrapper(t *testing.T) {
 	if !errors.Is(err, provider.ErrUnsupportedFunctionality) {
 		t.Fatalf("expected unsupported functionality error")
 	}
-
-	_, err = wrapped.DoStream(context.Background(), provider.LanguageModelV3CallOptions{})
-	if !errors.Is(err, provider.ErrUnsupportedFunctionality) {
-		t.Fatalf("expected unsupported functionality error for streaming")
-	}
 }
 
 func TestGatewayEmbeddingModelWrapper(t *testing.T) {
