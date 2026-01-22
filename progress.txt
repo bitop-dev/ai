@@ -52,3 +52,4 @@
 2026-01-22: Added Fireworks provider wrapper with safety/response metadata mapping, streaming tests, docs, and marked the Phase 8 task complete.
 2026-01-22: Implemented DeepInfra provider with OpenAI-compatible language/embedding support, image inference handling, tests, and documentation.
 2026-01-22: Added Replicate provider with async prediction polling, request option mapping, tests, and documentation.
+2026-01-22: Implemented fal provider with image/speech/transcription support, added polling and payload tests, documented usage, and marked the task complete.
