@@ -333,7 +333,7 @@ tasks:
       - Finish reason mapping implemented
 
   - title: "phase-6.md - Add OpenAI tests and docs"
-    completed: false
+    completed: true
     parallel_group: 7
     tags: [phase-6, provider, openai, tests]
     file: phase-6.md

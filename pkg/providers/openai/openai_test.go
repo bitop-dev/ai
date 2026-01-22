@@ -276,6 +276,140 @@ func TestOpenAIEmbeddingsRequest(t *testing.T) {
 	}
 }
 
+func TestOpenAIChatGenerateRequest(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/chat/completions" {
+			t.Fatalf("unexpected path: %s", r.URL.Path)
+		}
+		if r.Header.Get("Authorization") != "Bearer chat-key" {
+			t.Fatalf("missing auth header")
+		}
+		if r.Header.Get("X-Request") != "request" {
+			t.Fatalf("missing request header")
+		}
+		var payload map[string]any
+		if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+			t.Fatalf("decode request: %v", err)
+		}
+		if payload["model"] != "gpt-4" {
+			t.Fatalf("unexpected model: %#v", payload["model"])
+		}
+		if payload["max_tokens"] != float64(128) {
+			t.Fatalf("unexpected max tokens: %#v", payload["max_tokens"])
+		}
+		messages, ok := payload["messages"].([]any)
+		if !ok || len(messages) != 1 {
+			t.Fatalf("unexpected messages: %#v", payload["messages"])
+		}
+		message := messages[0].(map[string]any)
+		if message["content"] != "Hello" {
+			t.Fatalf("unexpected message content: %#v", message["content"])
+		}
+		if payload["tool_choice"] != "required" {
+			t.Fatalf("unexpected tool choice: %#v", payload["tool_choice"])
+		}
+		responseFormat := payload["response_format"].(map[string]any)
+		if responseFormat["type"] != "json_schema" {
+			t.Fatalf("unexpected response format: %#v", responseFormat)
+		}
+		tools, ok := payload["tools"].([]any)
+		if !ok || len(tools) != 1 {
+			t.Fatalf("missing tools: %#v", payload["tools"])
+		}
+		if payload["user"] != "beta" {
+			t.Fatalf("missing override field: %#v", payload["user"])
+		}
+		if payload["metadata"] != "trace" {
+			t.Fatalf("missing request override: %#v", payload["metadata"])
+		}
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprint(w, `{}`)
+	}))
+	defer server.Close()
+
+	client := CreateOpenAI(Settings{
+		BaseURL: server.URL,
+		APIKey:  "chat-key",
+	})
+	model, err := client.LanguageModel("gpt-4")
+	if err != nil {
+		t.Fatalf("language model: %v", err)
+	}
+	_, err = model.DoGenerate(context.Background(), provider.LanguageModelV3CallOptions{
+		Prompt: provider.Prompt{
+			Messages: []provider.ModelMessage{{
+				Role:    provider.RoleUser,
+				Content: []provider.ContentPart{provider.TextContent{Text: "Hello"}},
+			}},
+		},
+		MaxOutputTokens: 128,
+		ToolChoice:      &provider.ToolChoice{Type: provider.ToolChoiceTypeRequired},
+		ResponseFormat: &provider.ResponseFormat{
+			Type:        provider.ResponseFormatTypeJSON,
+			Name:        "result",
+			Description: "response",
+			Schema:      provider.JSONObject{"type": "object"},
+		},
+		ProviderOptions: provider.ProviderOptions{
+			"openai": provider.JSONObject{
+				"tools": []providerutils.ToolSpecification{
+					{Name: "search", Description: "Search", Parameters: provider.JSONObject{"type": "object"}},
+				},
+				"user": "beta",
+				"request": provider.JSONObject{
+					"metadata": "trace",
+				},
+			},
+		},
+		RequestOptions: provider.RequestOptions{Headers: map[string]string{"X-Request": "request"}},
+	})
+	if err != nil {
+		t.Fatalf("generate: %v", err)
+	}
+}
+
+func TestOpenAICompletionsGenerateRequest(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/completions" {
+			t.Fatalf("unexpected path: %s", r.URL.Path)
+		}
+		var payload map[string]any
+		if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+			t.Fatalf("decode request: %v", err)
+		}
+		if payload["prompt"] != "Hello\nWorld" {
+			t.Fatalf("unexpected prompt: %#v", payload["prompt"])
+		}
+		if payload["max_tokens"] != float64(42) {
+			t.Fatalf("unexpected max tokens: %#v", payload["max_tokens"])
+		}
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprint(w, `{}`)
+	}))
+	defer server.Close()
+
+	client := CreateOpenAI(Settings{BaseURL: server.URL, APIKey: "comp-key"})
+	model, err := client.LanguageModel("text-davinci-003")
+	if err != nil {
+		t.Fatalf("language model: %v", err)
+	}
+	_, err = model.DoGenerate(context.Background(), provider.LanguageModelV3CallOptions{
+		Prompt: provider.Prompt{
+			Messages: []provider.ModelMessage{
+				{Role: provider.RoleUser, Content: []provider.ContentPart{provider.TextContent{Text: "Hello"}}},
+				{Role: provider.RoleUser, Content: []provider.ContentPart{provider.TextContent{Text: "World"}}},
+			},
+		},
+		MaxOutputTokens: 42,
+		ProviderOptions: provider.ProviderOptions{
+			"openai": provider.JSONObject{"mode": "completions"},
+		},
+	})
+	if err != nil {
+		t.Fatalf("generate: %v", err)
+	}
+}
+
 func collectParts(stream <-chan provider.StreamPart) []provider.StreamPart {
 	var parts []provider.StreamPart
 	for part := range stream {
