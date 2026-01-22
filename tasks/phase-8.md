@@ -35,11 +35,27 @@
 - `tools.go`: provider tool mapping (if applicable).
 - `doc.go`: usage documentation.
 
+### Provider Port Checklist
+- Settings struct covers auth, base URL, headers, and defaults.
+- Request/response mapping for language models and supported modalities.
+- Tool definition mapping and tool call result conversion.
+- Streaming mapping for deltas, finish reasons, and usage accumulation.
+- Error mapping includes request IDs and provider metadata.
+- Usage conversion normalizes tokens, durations, and warnings.
+- Options parsing validates provider-specific overrides.
+- Tests cover payload construction, response parsing, and streaming.
+- Documentation references config, examples, and limitations.
+
 ## Deliverables
 - Per-provider checklist in `docs/providers/<provider>.md`.
 - Implementation order by tier and dependencies.
 - Shared template notes for option parsing, streaming, and error handling.
 - Explicit notes for `openai-compatible`, `vercel`, and adapter packages.
+
+### Docs Template
+- Base outline lives in `docs/providers/template.md`.
+- Each provider doc should include configuration, language model usage, tools/structured output, streaming, and known limitations.
+- Include a checklist section to track mapping completeness.
 
 ## Implementation Tiers
 ### Tier 1 (Core Language Models)

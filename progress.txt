@@ -34,3 +34,4 @@
 2026-01-22: Added the Anthropic provider with request mapping for messages/tools/structured output, wrote tests for payload construction, and marked the Phase 7 provider task complete.
 2026-01-22: Implemented Anthropic streaming SSE handling with tool/reasoning mapping, added streaming tests, and marked the Phase 7 streaming task complete.
 2026-01-22: Added Anthropic docs and error mapping test coverage, and marked the Phase 7 tests/docs task complete.
+2026-01-22: Added Phase 8 provider template documentation, created a provider docs outline, added a template checklist test, and marked the Phase 8 template task complete.
