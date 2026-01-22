@@ -2,11 +2,13 @@ package ai
 
 import (
 	"context"
+	"errors"
 	"reflect"
 	"testing"
 	"time"
 
 	"github.com/vercel/ai-sdk-go/pkg/provider"
+	"github.com/vercel/ai-sdk-go/pkg/providerutils"
 )
 
 type stubLanguageModel struct {
@@ -203,5 +205,71 @@ func TestGenerateTextAggregates(t *testing.T) {
 	metadata := provider.ProviderMetadata{"stub": {"a": "1", "b": "2"}}
 	if !reflect.DeepEqual(result.ProviderMetadata, metadata) {
 		t.Fatalf("ProviderMetadata mismatch: got %#v want %#v", result.ProviderMetadata, metadata)
+	}
+}
+
+func TestGenerateObjectParsesJSON(t *testing.T) {
+	model := &stubLanguageModel{parts: []provider.StreamPart{
+		{Type: provider.StreamPartTypeTextStart, TextStart: &provider.TextStart{Text: "note:\n```json\n{\"answer\":42}\n```"}},
+		{Type: provider.StreamPartTypeFinish, Finish: &provider.Finish{Reason: provider.FinishReasonStop}},
+	}}
+
+	validator := providerutils.SchemaValidatorFunc(func(ctx context.Context, schema provider.JSONSchema, value provider.JSONValue) error {
+		object, ok := value.(provider.JSONObject)
+		if !ok {
+			return errors.New("expected object")
+		}
+		if _, ok := object["answer"]; !ok {
+			return errors.New("missing answer")
+		}
+		return nil
+	})
+
+	result, err := GenerateObject(context.Background(), model, GenerateObjectOptions{
+		Prompt: provider.Prompt{Messages: []provider.ModelMessage{{
+			Role:    provider.RoleUser,
+			Content: []provider.ContentPart{provider.TextContent{Text: "hi"}},
+		}}},
+		ResponseFormat:  &provider.ResponseFormat{Schema: provider.JSONObject{"type": "object"}},
+		SchemaValidator: validator,
+	})
+	if err != nil {
+		t.Fatalf("GenerateObject returned error: %v", err)
+	}
+
+	object, ok := result.Object.(provider.JSONObject)
+	if !ok {
+		t.Fatalf("expected object result, got %T", result.Object)
+	}
+	if object["answer"] != int64(42) {
+		t.Fatalf("object value mismatch: got %#v want %#v", object["answer"], int64(42))
+	}
+}
+
+func TestGenerateObjectValidationError(t *testing.T) {
+	model := &stubLanguageModel{parts: []provider.StreamPart{
+		{Type: provider.StreamPartTypeTextStart, TextStart: &provider.TextStart{Text: "{\"answer\":42}"}},
+		{Type: provider.StreamPartTypeFinish, Finish: &provider.Finish{Reason: provider.FinishReasonStop}},
+	}}
+
+	validator := providerutils.SchemaValidatorFunc(func(ctx context.Context, schema provider.JSONSchema, value provider.JSONValue) error {
+		return errors.New("invalid schema")
+	})
+
+	_, err := GenerateObject(context.Background(), model, GenerateObjectOptions{
+		Prompt: provider.Prompt{Messages: []provider.ModelMessage{{
+			Role:    provider.RoleUser,
+			Content: []provider.ContentPart{provider.TextContent{Text: "hi"}},
+		}}},
+		ResponseFormat:  &provider.ResponseFormat{Schema: provider.JSONObject{"type": "object"}},
+		SchemaValidator: validator,
+	})
+	if err == nil {
+		t.Fatalf("expected validation error")
+	}
+
+	var validationErr *providerutils.JSONValidationError
+	if !errors.As(err, &validationErr) {
+		t.Fatalf("expected JSONValidationError, got %T", err)
 	}
 }

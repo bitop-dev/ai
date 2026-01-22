@@ -269,7 +269,7 @@ tasks:
       - Retry and stop conditions implemented
 
   - title: "phase-5.md - Implement structured output parsing"
-    completed: false
+    completed: true
     parallel_group: 6
     tags: [phase-5, schema]
     file: phase-5.md
