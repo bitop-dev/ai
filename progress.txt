@@ -25,3 +25,4 @@
 2026-01-22: Implemented core ai Generate/Stream APIs with stream wrapper and option mapping, added tests, and marked the Phase 5 core API task complete.
 2026-01-22: Added core tool loop orchestration with tool approval/execution handling, coverage for rejection/max-step behavior, and marked the Phase 5 tool loop task complete.
 2026-01-22: Implemented structured output parsing for GenerateObject/StreamObject with schema validation hooks, added JSON extraction fallback, and added tests.
+2026-01-22: Added provider registry with model ID parsing, middleware support, and ResolveModel helper, plus registry tests and documentation updates.

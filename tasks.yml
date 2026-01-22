@@ -279,7 +279,7 @@ tasks:
       - Streaming structured output supported or documented
 
   - title: "phase-5.md - Implement provider registry and ResolveModel"
-    completed: false
+    completed: true
     parallel_group: 6
     tags: [phase-5, registry]
     file: phase-5.md
