@@ -120,7 +120,7 @@ tasks:
       - Error metadata preserved for debugging
 
   - title: "phase-2.md - Define stream parts and usage types"
-    completed: false
+    completed: true
     parallel_group: 3
     tags: [phase-2, streaming]
     file: phase-2.md
