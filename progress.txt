@@ -1,0 +1,1 @@
+2026-01-21: Documented repository naming conventions in `tasks/phase-0.md`, added phase-0 documentation tests, and marked the task complete.

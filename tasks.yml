@@ -1,0 +1,959 @@
+project: ai-sdk-go
+version: "1.0"
+feature: ai-sdk-6-reimplementation
+
+tasks:
+  # ===========================================================================
+  # PARALLEL GROUP 1: Phase 0 - Repository Structure
+  # ===========================================================================
+  - title: "phase-0.md - Define repository layout and naming conventions"
+    completed: true
+    parallel_group: 1
+    tags: [phase-0, structure]
+    file: phase-0.md
+    acceptance_criteria:
+      - Top-level layout documented (cmd, internal, pkg, examples, docs)
+      - Public vs internal package rules stated
+      - Naming conventions and import paths listed
+
+  - title: "phase-0.md - Map TS packages to Go packages and note exclusions"
+    completed: false
+    parallel_group: 1
+    tags: [phase-0, mapping]
+    file: phase-0.md
+    acceptance_criteria:
+      - Each ai-sdk-6 package mapped to a Go package or noted as not ported
+      - Non-ported packages list replacement approach
+      - Mapping validated against ai-sdk-6/packages inventory
+
+  - title: "phase-0.md - Decide module layout and module path"
+    completed: false
+    parallel_group: 1
+    tags: [phase-0, module]
+    file: phase-0.md
+    acceptance_criteria:
+      - Single vs multi-module decision recorded
+      - Module path chosen and documented
+      - Public package boundaries aligned with module decision
+
+  # ===========================================================================
+  # PARALLEL GROUP 2: Phase 1 - Foundation and Layout
+  # ===========================================================================
+  - title: "phase-1.md - Finalize module identity and versioning"
+    completed: false
+    parallel_group: 2
+    tags: [phase-1, module]
+    file: phase-1.md
+    acceptance_criteria:
+      - Go version, module path, and version policy documented
+      - Module naming conventions confirmed
+      - Decision recorded in phase doc
+
+  - title: "phase-1.md - Decide streaming API shape and request options"
+    completed: false
+    parallel_group: 2
+    tags: [phase-1, streaming]
+    file: phase-1.md
+    acceptance_criteria:
+      - Iterator vs channel choice recorded
+      - Request options shape defined (headers, timeout, idempotency)
+      - Context cancellation strategy documented
+
+  - title: "phase-1.md - Choose schema validation and dependency policy"
+    completed: false
+    parallel_group: 2
+    tags: [phase-1, schema]
+    file: phase-1.md
+    acceptance_criteria:
+      - Default JSON schema library selected
+      - Pluggable validation interface documented
+      - Dependency policy recorded (stdlib-first, minimal deps)
+
+  - title: "phase-1.md - Define telemetry hook interface"
+    completed: false
+    parallel_group: 2
+    tags: [phase-1, telemetry]
+    file: phase-1.md
+    acceptance_criteria:
+      - Telemetry interface defined (timing, usage, errors)
+      - Optional/no-op behavior documented
+      - OpenTelemetry scope decision recorded
+
+  # ===========================================================================
+  # PARALLEL GROUP 3: Phase 2 - provider package
+  # ===========================================================================
+  - title: "phase-2.md - Implement provider interfaces"
+    completed: false
+    parallel_group: 3
+    tags: [phase-2, provider]
+    file: phase-2.md
+    acceptance_criteria:
+      - LanguageModelV3 and other model interfaces defined
+      - ProviderV3 interface exposes model accessors
+      - Interfaces documented for provider authors
+
+  - title: "phase-2.md - Define prompt, message, and tool types"
+    completed: false
+    parallel_group: 3
+    tags: [phase-2, types]
+    file: phase-2.md
+    acceptance_criteria:
+      - Prompt and message types defined
+      - Content part variants defined
+      - Tool call and tool result types defined
+
+  - title: "phase-2.md - Implement error taxonomy and helpers"
+    completed: false
+    parallel_group: 3
+    tags: [phase-2, errors]
+    file: phase-2.md
+    acceptance_criteria:
+      - Typed error structs implemented
+      - Error classification helpers defined
+      - Error metadata preserved for debugging
+
+  - title: "phase-2.md - Define stream parts and usage types"
+    completed: false
+    parallel_group: 3
+    tags: [phase-2, streaming]
+    file: phase-2.md
+    acceptance_criteria:
+      - Stream part union defined with standard event types
+      - Usage structs defined for modalities
+      - Provider metadata and warnings supported
+
+  - title: "phase-2.md - Define JSON types and response format"
+    completed: false
+    parallel_group: 3
+    tags: [phase-2, schema]
+    file: phase-2.md
+    acceptance_criteria:
+      - JSONValue/JSONObject types defined
+      - ResponseFormat and ToolChoice types defined
+      - ProviderOptions and RequestOptions included
+
+  # ===========================================================================
+  # PARALLEL GROUP 4: Phase 3 - providerutils package
+  # ===========================================================================
+  - title: "phase-3.md - Implement tool system helpers"
+    completed: false
+    parallel_group: 4
+    tags: [phase-3, tools]
+    file: phase-3.md
+    acceptance_criteria:
+      - Tool definition and execution helpers implemented
+      - Tool call/result helpers compatible with stream parts
+      - Tool-call argument accumulator for streaming deltas
+
+  - title: "phase-3.md - Implement schema helpers"
+    completed: false
+    parallel_group: 4
+    tags: [phase-3, schema]
+    file: phase-3.md
+    acceptance_criteria:
+      - JSON schema wrapper types defined
+      - Validation interface implemented
+      - Strict vs lenient schema helpers documented
+
+  - title: "phase-3.md - Implement JSON parsing helpers"
+    completed: false
+    parallel_group: 4
+    tags: [phase-3, json]
+    file: phase-3.md
+    acceptance_criteria:
+      - Safe JSON parsing utilities implemented
+      - Validation error types include raw payloads
+      - Helpers convert data to JSONValue
+
+  - title: "phase-3.md - Implement HTTP utilities and retry policy"
+    completed: false
+    parallel_group: 4
+    tags: [phase-3, http]
+    file: phase-3.md
+    acceptance_criteria:
+      - PostJSON/PostMultipart helpers implemented
+      - Request options applied consistently
+      - Retry/backoff helpers implemented
+
+  - title: "phase-3.md - Implement SSE parsing and response writer"
+    completed: false
+    parallel_group: 4
+    tags: [phase-3, streaming]
+    file: phase-3.md
+    acceptance_criteria:
+      - SSE parser handles OpenAI/Anthropic formats
+      - Chunk decoding hooks implemented
+      - SSE encoder/pipe helper for http.ResponseWriter
+
+  - title: "phase-3.md - Implement misc utilities"
+    completed: false
+    parallel_group: 4
+    tags: [phase-3, utils]
+    file: phase-3.md
+    acceptance_criteria:
+      - ID generation helper implemented
+      - Time helpers and logging interface added
+      - Utilities tested with deterministic fixtures
+
+  # ===========================================================================
+  # PARALLEL GROUP 5: Phase 4 - gateway package
+  # ===========================================================================
+  - title: "phase-4.md - Implement gateway provider factory"
+    completed: false
+    parallel_group: 5
+    tags: [phase-4, gateway]
+    file: phase-4.md
+    acceptance_criteria:
+      - CreateGateway settings and defaults implemented
+      - Auth/header handling documented
+      - Provider name override supported
+
+  - title: "phase-4.md - Implement gateway model wrappers"
+    completed: false
+    parallel_group: 5
+    tags: [phase-4, gateway]
+    file: phase-4.md
+    acceptance_criteria:
+      - Language model wrapper implemented
+      - Embedding and image model wrappers implemented
+      - Gateway model settings types defined
+
+  - title: "phase-4.md - Implement gateway error mapping"
+    completed: false
+    parallel_group: 5
+    tags: [phase-4, gateway]
+    file: phase-4.md
+    acceptance_criteria:
+      - Gateway error response parsing implemented
+      - Typed errors map to provider errors
+      - Request IDs and metadata preserved
+
+  - title: "phase-4.md - Implement gateway streaming and tests"
+    completed: false
+    parallel_group: 5
+    tags: [phase-4, gateway]
+    file: phase-4.md
+    acceptance_criteria:
+      - SSE streaming mapped to stream parts
+      - Unit tests cover streaming and error mapping
+      - Example usage documented
+
+  # ===========================================================================
+  # PARALLEL GROUP 6: Phase 5 - ai core package
+  # ===========================================================================
+  - title: "phase-5.md - Implement core Generate/Stream APIs"
+    completed: false
+    parallel_group: 6
+    tags: [phase-5, ai]
+    file: phase-5.md
+    acceptance_criteria:
+      - GenerateText/StreamText implemented
+      - GenerateObject/StreamObject wrappers implemented
+      - Embed/GenerateImage/GenerateSpeech/Transcribe/Rerank implemented
+
+  - title: "phase-5.md - Implement tool loop orchestration"
+    completed: false
+    parallel_group: 6
+    tags: [phase-5, tools]
+    file: phase-5.md
+    acceptance_criteria:
+      - Tool call parsing and execution implemented
+      - Approval and rejection flow supported
+      - Retry and stop conditions implemented
+
+  - title: "phase-5.md - Implement structured output parsing"
+    completed: false
+    parallel_group: 6
+    tags: [phase-5, schema]
+    file: phase-5.md
+    acceptance_criteria:
+      - JSON response format supported
+      - Schema validation hooks integrated
+      - Streaming structured output supported or documented
+
+  - title: "phase-5.md - Implement provider registry and ResolveModel"
+    completed: false
+    parallel_group: 6
+    tags: [phase-5, registry]
+    file: phase-5.md
+    acceptance_criteria:
+      - Provider registry implemented
+      - providerId:modelId parsing implemented
+      - Middleware hooks supported
+
+  - title: "phase-5.md - Implement stream helpers for HTTP"
+    completed: false
+    parallel_group: 6
+    tags: [phase-5, streaming]
+    file: phase-5.md
+    acceptance_criteria:
+      - Stream iterator and helpers implemented
+      - SSE piping to http.ResponseWriter supported
+      - Stream cancellation honors context
+
+  - title: "phase-5.md - Integrate telemetry hooks"
+    completed: false
+    parallel_group: 6
+    tags: [phase-5, telemetry]
+    file: phase-5.md
+    acceptance_criteria:
+      - Telemetry hooks invoked on requests
+      - Usage and warnings recorded in results
+      - No-op behavior documented
+
+  # ===========================================================================
+  # PARALLEL GROUP 7: Phase 6 - providers/openai
+  # ===========================================================================
+  - title: "phase-6.md - Implement OpenAI provider"
+    completed: false
+    parallel_group: 7
+    tags: [phase-6, provider, openai]
+    file: phase-6.md
+    acceptance_criteria:
+      - Provider factory and settings implemented
+      - Chat/responses/completions requests mapped
+      - Embeddings/images/speech/transcriptions supported
+      - Tool mapping and response format supported
+
+  - title: "phase-6.md - Implement OpenAI streaming support"
+    completed: false
+    parallel_group: 7
+    tags: [phase-6, provider, openai, streaming]
+    file: phase-6.md
+    acceptance_criteria:
+      - SSE streaming mapped to stream parts
+      - Tool call deltas accumulated correctly
+      - Finish reason mapping implemented
+
+  - title: "phase-6.md - Add OpenAI tests and docs"
+    completed: false
+    parallel_group: 7
+    tags: [phase-6, provider, openai, tests]
+    file: phase-6.md
+    acceptance_criteria:
+      - Unit tests cover request/response mapping
+      - Streaming tests cover deltas and finish parts
+      - docs/providers/openai.md added
+
+  # ===========================================================================
+  # PARALLEL GROUP 8: Phase 7 - providers/anthropic
+  # ===========================================================================
+  - title: "phase-7.md - Implement Anthropic provider"
+    completed: false
+    parallel_group: 8
+    tags: [phase-7, provider, anthropic]
+    file: phase-7.md
+    acceptance_criteria:
+      - Provider factory and settings implemented
+      - Messages request/response mapping implemented
+      - Tool definitions and structured output supported
+
+  - title: "phase-7.md - Implement Anthropic streaming support"
+    completed: false
+    parallel_group: 8
+    tags: [phase-7, provider, anthropic, streaming]
+    file: phase-7.md
+    acceptance_criteria:
+      - SSE streaming mapped to stream parts
+      - Thinking/citation parts mapped
+      - Finish reason mapping implemented
+
+  - title: "phase-7.md - Add Anthropic tests and docs"
+    completed: false
+    parallel_group: 8
+    tags: [phase-7, provider, anthropic, tests]
+    file: phase-7.md
+    acceptance_criteria:
+      - Unit tests cover request/response mapping
+      - Streaming tests cover deltas and tool parts
+      - docs/providers/anthropic.md added
+
+  # ===========================================================================
+  # PARALLEL GROUP 9: Phase 8 - remaining providers
+  # ===========================================================================
+  - title: "phase-8.md - Create provider port template and docs scaffolding"
+    completed: false
+    parallel_group: 9
+    tags: [phase-8, providers, template]
+    file: phase-8.md
+    acceptance_criteria:
+      - Provider template files documented
+      - docs/providers/<provider>.md outline added
+      - Checklist for streaming/tool mapping included
+
+  - title: "phase-8.md - Implement provider: openai-compatible"
+    completed: false
+    parallel_group: 9
+    tags: [phase-8, provider, openai-compatible]
+    file: phase-8.md
+    acceptance_criteria:
+      - Base provider supports OpenAI-compatible endpoints (chat/completions, responses where supported)
+      - Request options and tool mapping implemented
+      - Streaming mapping implemented
+      - Error mapping and response metadata normalized
+      - Tests and docs entry added
+
+  - title: "phase-8.md - Implement provider: vercel"
+    completed: false
+    parallel_group: 9
+    tags: [phase-8, provider, vercel]
+    file: phase-8.md
+    acceptance_criteria:
+      - Wrapper provider built on openai-compatible
+      - Default base URL and headers mapped to Vercel API
+      - Env-based API key configuration documented
+      - Tests and docs entry added
+
+  - title: "phase-8.md - Implement provider: google"
+    completed: false
+    parallel_group: 9
+    tags: [phase-8, provider, google]
+    file: phase-8.md
+    acceptance_criteria:
+      - Provider factory and settings implemented
+      - Gemini API key auth and endpoint mapping implemented
+      - Tool calling and structured output mapped
+      - Language model request/response mapping complete
+      - Streaming behavior implemented or documented
+      - Tests and docs entry added
+
+  - title: "phase-8.md - Implement provider: google-vertex"
+    completed: false
+    parallel_group: 9
+    tags: [phase-8, provider, google-vertex]
+    file: phase-8.md
+    acceptance_criteria:
+      - Provider factory and settings implemented
+      - Project/region and endpoint configuration implemented
+      - Auth supports service account credentials or ADC
+      - Language model request/response mapping complete
+      - Streaming behavior implemented or documented
+      - Tests and docs entry added
+
+  - title: "phase-8.md - Implement provider: azure"
+    completed: false
+    parallel_group: 9
+    tags: [phase-8, provider, azure]
+    file: phase-8.md
+    acceptance_criteria:
+      - Provider factory and settings implemented
+      - Deployment name, endpoint, and api-version mapping implemented
+      - Azure-specific headers and error mapping handled
+      - Language model request/response mapping complete
+      - Streaming behavior implemented or documented
+      - Tests and docs entry added
+
+  - title: "phase-8.md - Implement provider: amazon-bedrock"
+    completed: false
+    parallel_group: 9
+    tags: [phase-8, provider, amazon-bedrock]
+    file: phase-8.md
+    acceptance_criteria:
+      - Provider factory and settings implemented
+      - SigV4 signing and AWS credential chain implemented
+      - InvokeModel and streaming response mapping implemented
+      - Language model request/response mapping complete
+      - Streaming behavior implemented or documented
+      - Tests and docs entry added
+
+  - title: "phase-8.md - Implement provider: mistral"
+    completed: false
+    parallel_group: 9
+    tags: [phase-8, provider, mistral]
+    file: phase-8.md
+    acceptance_criteria:
+      - Provider factory and settings implemented
+      - Tool calling and JSON mode mapping implemented
+      - Language model request/response mapping complete
+      - Streaming behavior implemented or documented
+      - Tests and docs entry added
+
+  - title: "phase-8.md - Implement provider: cohere"
+    completed: false
+    parallel_group: 9
+    tags: [phase-8, provider, cohere]
+    file: phase-8.md
+    acceptance_criteria:
+      - Provider factory and settings implemented
+      - Chat/command request mapping implemented
+      - Rerank support mapped or documented if deferred
+      - Language model request/response mapping complete
+      - Streaming behavior implemented or documented
+      - Tests and docs entry added
+
+  - title: "phase-8.md - Implement provider: groq"
+    completed: false
+    parallel_group: 9
+    tags: [phase-8, provider, groq]
+    file: phase-8.md
+    acceptance_criteria:
+      - Provider factory and settings implemented
+      - OpenAI-compatible base URL and headers configured
+      - Rate limit and error mapping handled
+      - Language model request/response mapping complete
+      - Streaming behavior implemented or documented
+      - Tests and docs entry added
+
+  - title: "phase-8.md - Implement provider: togetherai"
+    completed: false
+    parallel_group: 9
+    tags: [phase-8, provider, togetherai]
+    file: phase-8.md
+    acceptance_criteria:
+      - Provider factory and settings implemented
+      - OpenAI-compatible base URL with model prefix mapping
+      - Language model request/response mapping complete
+      - Streaming behavior implemented or documented
+      - Tests and docs entry added
+
+  - title: "phase-8.md - Implement provider: xai"
+    completed: false
+    parallel_group: 9
+    tags: [phase-8, provider, xai]
+    file: phase-8.md
+    acceptance_criteria:
+      - Provider factory and settings implemented
+      - OpenAI-compatible base URL configured
+      - Reasoning and usage metadata mapped
+      - Language model request/response mapping complete
+      - Streaming behavior implemented or documented
+      - Tests and docs entry added
+
+  - title: "phase-8.md - Implement provider: deepseek"
+    completed: false
+    parallel_group: 9
+    tags: [phase-8, provider, deepseek]
+    file: phase-8.md
+    acceptance_criteria:
+      - Provider factory and settings implemented
+      - OpenAI-compatible base URL configured
+      - Reasoning and tool call fields mapped
+      - Language model request/response mapping complete
+      - Streaming behavior implemented or documented
+      - Tests and docs entry added
+
+  - title: "phase-8.md - Implement provider: perplexity"
+    completed: false
+    parallel_group: 9
+    tags: [phase-8, provider, perplexity]
+    file: phase-8.md
+    acceptance_criteria:
+      - Provider factory and settings implemented
+      - OpenAI-compatible base URL configured
+      - Search citations and metadata mapped
+      - Language model request/response mapping complete
+      - Streaming behavior implemented or documented
+      - Tests and docs entry added
+
+  - title: "phase-8.md - Implement provider: cerebras"
+    completed: false
+    parallel_group: 9
+    tags: [phase-8, provider, cerebras]
+    file: phase-8.md
+    acceptance_criteria:
+      - Provider factory and settings implemented
+      - OpenAI-compatible base URL configured
+      - Max output token constraints mapped
+      - Language model request/response mapping complete
+      - Streaming behavior implemented or documented
+      - Tests and docs entry added
+
+  - title: "phase-8.md - Implement provider: fireworks"
+    completed: false
+    parallel_group: 9
+    tags: [phase-8, provider, fireworks]
+    file: phase-8.md
+    acceptance_criteria:
+      - Provider factory and settings implemented
+      - OpenAI-compatible base URL configured
+      - Safety settings and response metadata mapped
+      - Language model request/response mapping complete
+      - Streaming behavior implemented or documented
+      - Tests and docs entry added
+
+  - title: "phase-8.md - Implement provider: deepinfra"
+    completed: false
+    parallel_group: 9
+    tags: [phase-8, provider, deepinfra]
+    file: phase-8.md
+    acceptance_criteria:
+      - Provider factory and settings implemented
+      - OpenAI-compatible base URL configured
+      - Response metadata and usage fields mapped
+      - Language model request/response mapping complete
+      - Streaming behavior implemented or documented
+      - Tests and docs entry added
+
+  - title: "phase-8.md - Implement provider: replicate"
+    completed: false
+    parallel_group: 9
+    tags: [phase-8, provider, replicate]
+    file: phase-8.md
+    acceptance_criteria:
+      - Provider factory and settings implemented
+      - Async prediction create and polling implemented
+      - Output URL/base64 mapping handled
+      - Image generation request/response mapping complete
+      - Error mapping and metadata extraction implemented
+      - Tests and docs entry added
+
+  - title: "phase-8.md - Implement provider: fal"
+    completed: false
+    parallel_group: 9
+    tags: [phase-8, provider, fal]
+    file: phase-8.md
+    acceptance_criteria:
+      - Provider factory and settings implemented
+      - Async job submission and polling implemented
+      - File upload and output mapping handled
+      - Image generation request/response mapping complete
+      - Error mapping and metadata extraction implemented
+      - Tests and docs entry added
+
+  - title: "phase-8.md - Implement provider: prodia"
+    completed: false
+    parallel_group: 9
+    tags: [phase-8, provider, prodia]
+    file: phase-8.md
+    acceptance_criteria:
+      - Provider factory and settings implemented
+      - Async job submission and polling implemented
+      - Seed and safety parameters mapped
+      - Image generation request/response mapping complete
+      - Error mapping and metadata extraction implemented
+      - Tests and docs entry added
+
+  - title: "phase-8.md - Implement provider: baseten"
+    completed: false
+    parallel_group: 9
+    tags: [phase-8, provider, baseten]
+    file: phase-8.md
+    acceptance_criteria:
+      - Provider factory and settings implemented
+      - Model ID and endpoint mapping implemented
+      - Auth header and response mapping handled
+      - Image generation request/response mapping complete
+      - Error mapping and metadata extraction implemented
+      - Tests and docs entry added
+
+  - title: "phase-8.md - Implement provider: black-forest-labs"
+    completed: false
+    parallel_group: 9
+    tags: [phase-8, provider, black-forest-labs]
+    file: phase-8.md
+    acceptance_criteria:
+      - Provider factory and settings implemented
+      - Image generation params mapped (size, seed, safety)
+      - Output URL/base64 mapping handled
+      - Image generation request/response mapping complete
+      - Error mapping and metadata extraction implemented
+      - Tests and docs entry added
+
+  - title: "phase-8.md - Implement provider: luma"
+    completed: false
+    parallel_group: 9
+    tags: [phase-8, provider, luma]
+    file: phase-8.md
+    acceptance_criteria:
+      - Provider factory and settings implemented
+      - Generation job submission and polling implemented
+      - Output URL mapping handled
+      - Image generation request/response mapping complete
+      - Error mapping and metadata extraction implemented
+      - Tests and docs entry added
+
+  - title: "phase-8.md - Implement provider: deepgram"
+    completed: false
+    parallel_group: 9
+    tags: [phase-8, provider, deepgram]
+    file: phase-8.md
+    acceptance_criteria:
+      - Provider factory and settings implemented
+      - Text-to-speech and transcription endpoints mapped
+      - File upload or URL inputs handled
+      - Speech and transcription mapping complete
+      - Error mapping and metadata extraction implemented
+      - Tests and docs entry added
+
+  - title: "phase-8.md - Implement provider: assemblyai"
+    completed: false
+    parallel_group: 9
+    tags: [phase-8, provider, assemblyai]
+    file: phase-8.md
+    acceptance_criteria:
+      - Provider factory and settings implemented
+      - Async transcription job create and polling implemented
+      - Webhook options documented if supported
+      - Transcription request/response mapping complete
+      - Error mapping and metadata extraction implemented
+      - Tests and docs entry added
+
+  - title: "phase-8.md - Implement provider: elevenlabs"
+    completed: false
+    parallel_group: 9
+    tags: [phase-8, provider, elevenlabs]
+    file: phase-8.md
+    acceptance_criteria:
+      - Provider factory and settings implemented
+      - Voice settings and model selection mapped
+      - Audio output handling implemented
+      - Speech generation mapping complete
+      - Error mapping and metadata extraction implemented
+      - Tests and docs entry added
+
+  - title: "phase-8.md - Implement provider: hume"
+    completed: false
+    parallel_group: 9
+    tags: [phase-8, provider, hume]
+    file: phase-8.md
+    acceptance_criteria:
+      - Provider factory and settings implemented
+      - Streaming or batch transcription mapped or documented
+      - Auth token handling and session config mapped
+      - Transcription request/response mapping complete
+      - Error mapping and metadata extraction implemented
+      - Tests and docs entry added
+
+  - title: "phase-8.md - Implement provider: lmnt"
+    completed: false
+    parallel_group: 9
+    tags: [phase-8, provider, lmnt]
+    file: phase-8.md
+    acceptance_criteria:
+      - Provider factory and settings implemented
+      - Speech generation request mapping implemented
+      - Audio output handling implemented
+      - Speech generation mapping complete
+      - Error mapping and metadata extraction implemented
+      - Tests and docs entry added
+
+  - title: "phase-8.md - Implement provider: gladia"
+    completed: false
+    parallel_group: 9
+    tags: [phase-8, provider, gladia]
+    file: phase-8.md
+    acceptance_criteria:
+      - Provider factory and settings implemented
+      - Async transcription job create and polling implemented
+      - File upload and output mapping handled
+      - Transcription request/response mapping complete
+      - Error mapping and metadata extraction implemented
+      - Tests and docs entry added
+
+  - title: "phase-8.md - Implement provider: revai"
+    completed: false
+    parallel_group: 9
+    tags: [phase-8, provider, revai]
+    file: phase-8.md
+    acceptance_criteria:
+      - Provider factory and settings implemented
+      - Async transcription job create and polling implemented
+      - Output transcript mapping handled
+      - Transcription request/response mapping complete
+      - Error mapping and metadata extraction implemented
+      - Tests and docs entry added
+
+  - title: "phase-8.md - Implement adapter: huggingface"
+    completed: false
+    parallel_group: 9
+    tags: [phase-8, adapter, huggingface]
+    file: phase-8.md
+    acceptance_criteria:
+      - Adapter configuration and auth mapping implemented
+      - Inference API base URL and model ID mapping documented
+      - Text generation or embeddings mapping implemented
+      - Primary request/response mapping complete
+      - Tests and docs entry added
+
+  - title: "phase-8.md - Implement adapter: langchain"
+    completed: false
+    parallel_group: 9
+    tags: [phase-8, adapter, langchain]
+    file: phase-8.md
+    acceptance_criteria:
+      - Adapter configuration and auth mapping implemented
+      - Streaming conversion and tool calls mapped
+      - Primary request/response mapping complete
+      - Tests and docs entry added
+
+  - title: "phase-8.md - Implement adapter: llamaindex"
+    completed: false
+    parallel_group: 9
+    tags: [phase-8, adapter, llamaindex]
+    file: phase-8.md
+    acceptance_criteria:
+      - Adapter configuration and auth mapping implemented
+      - Streaming conversion and tool calls mapped
+      - Primary request/response mapping complete
+      - Tests and docs entry added
+
+  # ===========================================================================
+  # PARALLEL GROUP 10: Phase 9 - tests, examples, and docs
+  # ===========================================================================
+  - title: "phase-9.md - Build internal test server fixtures"
+    completed: false
+    parallel_group: 10
+    tags: [phase-9, tests]
+    file: phase-9.md
+    acceptance_criteria:
+      - internal/testserver helpers implemented
+      - Request/response capture helpers included
+      - Used by provider unit tests
+
+  - title: "phase-9.md - Add core unit tests"
+    completed: false
+    parallel_group: 10
+    tags: [phase-9, tests]
+    file: phase-9.md
+    acceptance_criteria:
+      - Tool loop tests cover multi-step flows
+      - Streaming parts ordering tested
+      - Error classification tests added
+
+  - title: "phase-9.md - Add provider integration tests"
+    completed: false
+    parallel_group: 10
+    tags: [phase-9, tests]
+    file: phase-9.md
+    acceptance_criteria:
+      - OpenAI and Anthropic integration tests added
+      - Tests gated by env vars
+      - Streaming integration tests included
+
+  - title: "phase-9.md - Add example programs"
+    completed: false
+    parallel_group: 10
+    tags: [phase-9, examples]
+    file: phase-9.md
+    acceptance_criteria:
+      - Examples for text generation and streaming
+      - Tool calling and structured output examples added
+      - Embeddings, images, speech, transcription examples added
+
+  - title: "phase-9.md - Publish documentation set"
+    completed: false
+    parallel_group: 10
+    tags: [phase-9, docs]
+    file: phase-9.md
+    acceptance_criteria:
+      - README quickstart and API overview updated
+      - Migration guide and parity table added
+      - Provider docs index updated
+
+  # ===========================================================================
+  # PARALLEL GROUP 11: Phase 10 - MCP and tool servers
+  # ===========================================================================
+  - title: "phase-10.md - Implement MCP client core"
+    completed: false
+    parallel_group: 11
+    tags: [phase-10, mcp]
+    file: phase-10.md
+    acceptance_criteria:
+      - JSON-RPC client types implemented
+      - Tool discovery and invocation supported
+      - MCP error mapping implemented
+
+  - title: "phase-10.md - Implement MCP stdio transport"
+    completed: false
+    parallel_group: 11
+    tags: [phase-10, mcp]
+    file: phase-10.md
+    acceptance_criteria:
+      - Stdio transport handles framing and requests
+      - Cancellation and shutdown behavior documented
+      - Unit tests cover stdio framing
+
+  - title: "phase-10.md - Implement MCP HTTP transport"
+    completed: false
+    parallel_group: 11
+    tags: [phase-10, mcp]
+    file: phase-10.md
+    acceptance_criteria:
+      - HTTP transport supports request/response lifecycle
+      - Streaming or polling strategy documented
+      - Unit tests cover HTTP transport
+
+  - title: "phase-10.md - Implement MCP tool bridging"
+    completed: false
+    parallel_group: 11
+    tags: [phase-10, mcp]
+    file: phase-10.md
+    acceptance_criteria:
+      - MCP tools mapped to providerutils tool types
+      - Stream parts emitted for MCP tool calls
+      - Tool name mapping reversible
+
+  - title: "phase-10.md - Add MCP examples and docs"
+    completed: false
+    parallel_group: 11
+    tags: [phase-10, mcp, docs]
+    file: phase-10.md
+    acceptance_criteria:
+      - Examples for stdio and HTTP MCP included
+      - Tests cover tool mapping
+      - docs/providers/mcp.md added
+
+parallel_groups:
+  1:
+    name: Phase 0 - Repository Structure
+    description: Repo layout, module boundaries, and TS package mapping
+    status: planned
+  2:
+    name: Phase 1 - Foundation and Layout
+    description: Module identity, streaming API, schema, telemetry
+    status: planned
+    depends_on: [1]
+  3:
+    name: Phase 2 - provider package
+    description: Interfaces, shared types, errors, stream parts
+    status: planned
+    depends_on: [2]
+  4:
+    name: Phase 3 - providerutils package
+    description: Tools, schema helpers, HTTP utilities, SSE parsing
+    status: planned
+    depends_on: [3]
+  5:
+    name: Phase 4 - gateway package
+    description: Gateway provider and model wrappers
+    status: planned
+    depends_on: [3, 4]
+  6:
+    name: Phase 5 - ai core package
+    description: High-level APIs, tool loop, registry, streaming
+    status: planned
+    depends_on: [3, 4, 5]
+  7:
+    name: Phase 6 - providers/openai
+    description: OpenAI provider implementation
+    status: planned
+    depends_on: [3, 4]
+  8:
+    name: Phase 7 - providers/anthropic
+    description: Anthropic provider implementation
+    status: planned
+    depends_on: [3, 4]
+  9:
+    name: Phase 8 - remaining providers
+    description: Additional language, image, speech providers and adapters
+    status: planned
+    depends_on: [3, 4]
+  10:
+    name: Phase 9 - tests, examples, and docs
+    description: Test infrastructure, examples, and documentation
+    status: planned
+    depends_on: [6, 7, 8, 9, 11]
+  11:
+    name: Phase 10 - MCP and tool servers
+    description: MCP client, transports, tool bridging, examples
+    status: planned
+    depends_on: [3, 4, 6]
+
+metadata:
+  created_at: "2026-01-21"
+  updated_at: "2026-01-21"
+  owner: "unassigned"
+  feature_description: |
+    Re-implement AI SDK v6 in Go with parity for core APIs,
+    provider interfaces, provider adapters, streaming utilities,
+    and documentation.
