@@ -451,7 +451,7 @@ tasks:
       - Tests and docs entry added
 
   - title: "phase-8.md - Implement provider: amazon-bedrock"
-    completed: false
+    completed: true
     parallel_group: 9
     tags: [phase-8, provider, amazon-bedrock]
     file: phase-8.md
