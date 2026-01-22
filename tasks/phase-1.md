@@ -35,7 +35,7 @@
 - Streaming results return an iterator-style wrapper with `Next()`/`Value()`/`Err()`/`Close()`; channels are optional convenience helpers.
 - Errors are returned as Go `error` with typed errors implementing `Is` checks.
 - Expose `Warnings` in results rather than logging by default.
-- Standard `RequestOptions` includes headers, timeout, idempotency key, and per-call metadata.
+- Standard `RequestOptions` includes headers, timeout, idempotency key, per-call metadata, and provider-specific overrides via `ProviderOptions`.
 - Provider-specific overrides are carried via a `ProviderOptions` map on requests.
 
 ### Error Strategy
@@ -44,9 +44,16 @@
 - Keep raw provider response fields on error structs for debugging.
 
 ### Streaming Strategy
-- Provide `StreamText` and `StreamObject` with a unified stream part type.
-- Use context cancellation to terminate in-flight HTTP requests and streams.
-- Offer convenience helpers to pipe streams to HTTP responses.
+### Streaming API Shape
+- Iterator-first streaming API (`StreamText`/`StreamObject`) returning a `Stream` wrapper with `Next()`/`Value()`/`Err()`/`Close()`.
+- Optional channel adapter helpers (`StreamToChannel`, `StreamFromChannel`) live in `providerutils` for users who prefer channel consumption.
+- Stream parts use a unified type shared across providers for delta text, tool calls, finish reasons, and metadata.
+
+### Streaming Strategy
+- `StreamText` and `StreamObject` return stream parts using the shared stream part union.
+- Context cancellation terminates in-flight HTTP requests and closes iterators; `Close()` must be idempotent and trigger cancellation.
+- Stream goroutines must select on `ctx.Done()` and return `context.Canceled` when callers cancel.
+- Convenience helpers pipe streams to `http.ResponseWriter` for SSE.
 
 ### Schema Validation
 - Default schema validation library: `github.com/santhosh-tekuri/jsonschema/v5`.
@@ -77,6 +84,5 @@
 - Valibot and Zod adapters are replaced by JSON Schema support or Go-native validation.
 
 ## Open Decisions
-- Final streaming API shape (iterator default vs channel-first).
 - Telemetry scope (OpenTelemetry integration vs optional hooks only).
 - Whether to expose a built-in JSON schema validator or only a pluggable interface.

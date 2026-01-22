@@ -10,5 +10,15 @@
 - Keep providers under `pkg/providers/` to make discovery and documentation consistent.
 - Reserve `internal/` for shared helpers that should not be imported directly by SDK consumers.
 
+## Streaming API Shape Rationale
+- Default to iterator-style streams to mirror Go conventions (`Next`/`Value`/`Err`) and avoid goroutine leaks from unbuffered channels.
+- Keep optional channel adapters in `providerutils` so teams can adopt channels without making them the primary API.
+- Use a unified stream part union to normalize provider delta payloads and finish reasons across models.
+
+## Request Options and Cancellation Rationale
+- Standardize `RequestOptions` with headers, timeout, idempotency key, and metadata to align with provider HTTP requirements and retries.
+- Treat context cancellation as the primary way to stop streams, with `Close()` delegating to cancellation for deterministic cleanup.
+- Require stream loops to select on `ctx.Done()` so HTTP requests and background goroutines terminate promptly.
+
 ## Open Decisions
 - None for module identity and versioning.

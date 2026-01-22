@@ -4,3 +4,4 @@
 2026-01-21: Added package inventory validation to `tasks/tests/phase-0_layout_test.sh` and marked the Phase 0 mapping task complete.
 2026-01-21: Documented single-module decision and module path, added validation checks, and marked the Phase 0 module task complete.
 2026-01-21: Documented Phase 1 module identity rationale, added a module identity test, and marked the task complete.
+2026-01-21: Documented Phase 1 streaming API shape and request options, added streaming API tests, and marked the task complete.

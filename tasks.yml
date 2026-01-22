@@ -54,7 +54,7 @@ tasks:
       - decision rationale in tasks directory documented in phase-decision-1.md doc
 
   - title: "phase-1.md - Decide streaming API shape and request options"
-    completed: false
+    completed: true
     parallel_group: 2
     tags: [phase-1, streaming]
     file: phase-1.md
