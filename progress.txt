@@ -71,3 +71,4 @@
 2026-01-22: Added multi-tool core tool loop coverage, ran the full test suite, and marked the Phase 9 core unit test task complete.
 2026-01-22: Added OpenAI/Anthropic integration tests with env gating and streaming coverage, ran the full Go test suite, and marked the Phase 9 integration tests task complete.
 2026-01-22: Added example programs for text, streaming SSE, tool calling, structured output, embeddings/rerank, image, speech, and transcription flows with a validation test, and marked the Phase 9 examples task complete.
+2026-01-22: Added MCP client core JSON-RPC types, initialize/tools list/call flow, error mapping helpers, tests with a mock transport, and marked the Phase 10 MCP client task complete.
